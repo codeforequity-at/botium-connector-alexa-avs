@@ -1,6 +1,6 @@
 const yargs = require('yargs')
-
 const amazonAuthorize = require('./Authorize')
+const AVS = require('./AVS')
 
 const _parseArgs = () => {
   return Promise.resolve(
@@ -18,6 +18,16 @@ const _parseArgs = () => {
   )
 }
 
+let args
 _parseArgs()
-  .then((result) => amazonAuthorize.RefreshTokenAcquireRequest(result.c, result.p))
+  .then((result) => {
+    args = result
+    return amazonAuthorize.RefreshTokenAcquireRequest(result.c, result.p)
+  })
+  .then((deviceTokenResponse) => {
+    console.log(`Refresh token acquired`)
+    console.log(`The proper Capabilities:`)
+    console.log(`${AVS.ALEXA_AVS_AVS_CLIENT_ID} = ${args.c}`)
+    console.log(`${AVS.ALEXA_AVS_AVS_REFRESH_TOKEN} = ${args.c}`)
+  })
   .catch((err) => console.log(err))

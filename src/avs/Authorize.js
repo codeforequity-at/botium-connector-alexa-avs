@@ -109,13 +109,6 @@ const _deviceTokenRequest = (deviceAuthorizationResponse) => {
 }
 
 module.exports.DeviceTokenRefreshRequest = (refreshToken, clientId) => {
-  /*
-  {
-    "access_token": "{{STRING}}",
-    "refresh_token": "{{STRING}}",
-    "token_type": "bearer",
-    "expires_in": {{INTEGER}}  }
-  */
   return new Promise((resolve, reject) => {
     if (typeof code !== 'string') {
       const error = new TypeError('`code` must be a string.')
@@ -145,11 +138,27 @@ module.exports.DeviceTokenRefreshRequest = (refreshToken, clientId) => {
         }
 
         body = JSON.parse(body)
+        /*
+        {
+          "access_token": "{{STRING}}",
+          "refresh_token": "{{STRING}}",
+          "token_type": "bearer",
+          "expires_in": {{INTEGER}}  }
+        */
         resolve(body)
       })
   })
 }
 
+/*
+        {
+          "user_code": "{{STRING}}",
+          "device_code": "{{STRING}}",
+          "verification_uri": "{{STRING}}",
+          "expires_in": {{INTEGER}},
+          "interval": {{INTEGER}}
+        }
+*/
 module.exports.RefreshTokenAcquireRequest = (clientId, productID) => {
   return _deviceAuthorizationRequest(clientId, productID)
     .then((deviceAuthorizationResponse) => {
@@ -160,10 +169,4 @@ module.exports.RefreshTokenAcquireRequest = (clientId, productID) => {
         .then(() => deviceAuthorizationResponse)
     })
     .then((deviceAuthorizationResponse) => _deviceTokenRequest(deviceAuthorizationResponse))
-    .then((deviceTokenResponse) => {
-      console.log(`Refresh token acquired`)
-      console.log(`The proper Capabilities:`)
-      console.log(`The proper Capabilities:`)
-      console.log(`The proper Capabilities:`)
-    })
 }
