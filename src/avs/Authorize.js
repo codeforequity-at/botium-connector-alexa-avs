@@ -17,7 +17,6 @@ const argv = yargs.usage(
 getMac.getMac(function (err, macAddress) {
   if (err) throw err
 
-  const uri = `https://api.amazon.com/auth/O2/create/codepair?`
   const form = {
     response_type: 'device_code',
     client_id: argv.c,
@@ -32,13 +31,12 @@ getMac.getMac(function (err, macAddress) {
         }
   }
 
-  console.log(uri)
   request(
     { method: 'POST',
       headers: {
         'content-type': 'application/x-www-form-urlencoded'
       },
-      uri,
+      uri: `https://api.amazon.com/auth/O2/create/codepair?`,
       form,
       json: true
     }, function (error, response, body) {
