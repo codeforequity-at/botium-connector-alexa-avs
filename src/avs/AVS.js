@@ -1,83 +1,25 @@
 'use strict'
 
 const Buffer = require('buffer').Buffer
-const httpMessageParser = require('http-message-parser')
 
 const AMAZON_ERROR_CODES = require('./AmazonErrorCodes.js')
-const Observable = require('./Observable.js')
-const arrayBufferToString = require('./utils/arrayBufferToString.js')
+
+const Capabilities = {
+  ALEXA_AVS_AVS_CLIENT_ID: 'ALEXA_AVS_AVS_CLIENT_ID',
+  ALEXA_AVS_AVS_REFRESH_TOKEN: 'ALEXA_AVS_AVS_REFRESH_TOKEN'
+}
 
 class AVS {
-  constructor (options = {}) {
-    Observable(this)
-
-    this._bufferSize = 2048
-    this._inputChannels = 1
-    this._outputChannels = 1
-    this._leftChannel = []
-    this._rightChannel = []
-    this._audioContext = null
-    this._recorder = null
-    this._sampleRate = null
-    this._outputSampleRate = 16000
-    this._audioInput = null
-    this._volumeNode = null
-    this._debug = false
-    this._token = null
-    this._refreshToken = null
-    this._clientId = null
-    this._clientSecret = null
-    this._deviceId = null
-    this._deviceSerialNumber = null
-    this._redirectUri = null
-    this._audioQueue = []
-
-    if (options.token) {
-      this.setToken(options.token)
-    }
-
-    if (options.refreshToken) {
-      this.setRefreshToken(options.refreshToken)
-    }
-
-    if (options.clientId) {
-      this.setClientId(options.clientId)
-    }
-
-    if (options.clientSecret) {
-      this.setClientSecret(options.clientSecret)
-    }
-
-    if (options.deviceId) {
-      this.setDeviceId(options.deviceId)
-    }
-
-    if (options.deviceSerialNumber) {
-      this.setDeviceSerialNumber(options.deviceSerialNumber)
-    }
-
-    if (options.redirectUri) {
-      this.setRedirectUri(options.redirectUri)
-    }
-
-    if (options.debug) {
-      this.setDebug(options.debug)
-    }
+  constructor (caps) {
+    this.caps = caps
   }
 
-  _log (type, message) {
-    if (type && !message) {
-      message = type
-      type = 'log'
-    }
+  Validate () {
+    if (!this.caps[Capabilities.ALEXA_AVS_AVS_DEVICE_CODE]) throw new Error('ALEXA_AVS_AVS_DEVICE_CODE capability required')
+    if (!this.caps[Capabilities.ALEXA_AVS_AVS_USER_CODE]) throw new Error('ALEXA_AVS_AVS_USER_CODE capability required')
+  }
 
-    setTimeout(() => {
-      this.emit(AVS.EventTypes.LOG, message)
-    }, 0)
-
-    if (this._debug) {
-      console[type](message)
-    }
+  Build () {
   }
 
   sendAudio (dataView) {

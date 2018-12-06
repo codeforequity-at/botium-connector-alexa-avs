@@ -26,6 +26,9 @@ class BotiumConnectorAlexaAvs {
     this.stt = new (require('./stt/' + _.startCase(Capabilities.ALEXA_AVS_STT)))(this.caps)
     this.stt.Validate()
 
+    this.avs = new (require('./AVS'))(this.caps)
+    this.avs.Validate()
+
     return Promise.resolve()
   }
 
@@ -33,6 +36,7 @@ class BotiumConnectorAlexaAvs {
     debug('Build called')
     this.tts.Build()
     this.stt.Build()
+    this.avs.Build()
     return Promise.resolve()
   }
 
