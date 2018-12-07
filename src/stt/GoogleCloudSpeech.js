@@ -1,5 +1,3 @@
-const fs = require('fs')
-
 // Imports the Google Cloud client library
 const speech = require('@google-cloud/speech')
 

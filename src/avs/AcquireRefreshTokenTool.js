@@ -18,6 +18,12 @@ const _parseArgs = () => {
   )
 }
 
+//if (!process.stdin.setRawMode) {
+  if (false) {
+  console.log('Start in terminal!!!')
+  process.exit(-1)
+}
+
 let args
 _parseArgs()
   .then((result) => {
@@ -25,9 +31,9 @@ _parseArgs()
     return amazonAuthorize.RefreshTokenAcquireRequest(result.c, result.p)
   })
   .then((deviceTokenResponse) => {
-    console.log(`Refresh token acquired`)
-    console.log(`The proper Capabilities:`)
-    console.log(`${AVS.ALEXA_AVS_AVS_CLIENT_ID} = ${args.c}`)
-    console.log(`${AVS.ALEXA_AVS_AVS_REFRESH_TOKEN} = ${args.c}`)
+    //console.log(`Refresh token acquired`)
+    //console.log(`The proper Capabilities:`)
+    //console.log(`${AVS.ALEXA_AVS_AVS_CLIENT_ID} = ${args.c}`)
+    //console.log(`${AVS.ALEXA_AVS_AVS_REFRESH_TOKEN} = ${deviceTokenResponse.c}`)
   })
   .catch((err) => console.log(err))

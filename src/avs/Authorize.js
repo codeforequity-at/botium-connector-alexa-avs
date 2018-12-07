@@ -23,7 +23,7 @@ const _deviceAuthorizationRequest = (clientId, productID) => {
         scope: 'alexa:all',
         scope_data:
         {
-          productID: productID,
+          productID2: productID,
           productInstanceAttributes:
             {
               deviceSerialNumber: macAddress
@@ -31,7 +31,7 @@ const _deviceAuthorizationRequest = (clientId, productID) => {
         }
       }
 
-      request(
+      const requestObject =
         {
           method: 'POST',
           headers: {
@@ -39,17 +39,19 @@ const _deviceAuthorizationRequest = (clientId, productID) => {
           },
           uri: `https://api.amazon.com/auth/O2/create/codepair?`,
           form
-        }, function (error, response, body) {
-          if (error) {
-            reject(error)
-            return
-          }
-          if (response && response.statusCode !== 200) {
-            reject(body)
-            return
-          }
-          body = JSON.parse(body)
-          /*
+        }
+      console.log('sent: ' + JSON.stringify(requestObject, null, 2))
+      request(requestObject, function (error, response, body) {
+        if (error) {
+          reject(error)
+          return
+        }
+        if (response && response.statusCode !== 200) {
+          reject(body)
+          return
+        }
+        body = JSON.parse(body)
+        /*
         {
           "user_code": "{{STRING}}",
           "device_code": "{{STRING}}",
@@ -58,8 +60,8 @@ const _deviceAuthorizationRequest = (clientId, productID) => {
           "interval": {{INTEGER}}
         }
          */
-          resolve(body)
-        })
+        resolve(body)
+      })
     })
   })
 }
@@ -108,7 +110,7 @@ const _deviceTokenRequest = (deviceAuthorizationResponse) => {
   })
 }
 
-module.exports.DeviceTokenRefreshRequest = (refreshToken, clientId) => {
+module.exports.AccessTokenRefreshRequest = (clientId, refreshToken) => {
   return new Promise((resolve, reject) => {
     if (typeof code !== 'string') {
       const error = new TypeError('`code` must be a string.')
@@ -162,11 +164,10 @@ module.exports.DeviceTokenRefreshRequest = (refreshToken, clientId) => {
 module.exports.RefreshTokenAcquireRequest = (clientId, productID) => {
   return _deviceAuthorizationRequest(clientId, productID)
     .then((deviceAuthorizationResponse) => {
-      console.log(`Device code is ${deviceAuthorizationResponse.device_code}`)
       console.log(`Please login on ${deviceAuthorizationResponse.verification_uri} and enter ${deviceAuthorizationResponse.user_code}`) // Print the HTML for the Google homepage.
-      console.log('Press any key after done')
-      return _pressAnyKeyToContinue()
-        .then(() => deviceAuthorizationResponse)
+      //      console.log('Press any key after done')
+      //      return _pressAnyKeyToContinue()
+      //        .then(() => deviceAuthorizationResponse)
     })
-    .then((deviceAuthorizationResponse) => _deviceTokenRequest(deviceAuthorizationResponse))
+//    .then((deviceAuthorizationResponse) => _deviceTokenRequest(deviceAuthorizationResponse))
 }
