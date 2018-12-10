@@ -2,7 +2,7 @@
 
 const request = require('request')
 
-const {AccessTokenRefreshRequest} = require('./Authorize')
+const {AccessTokenRefreshRequest} = require('./auth/cbl/authentication')
 
 const ALEXA_AVS_AVS_CLIENT_ID = 'ALEXA_AVS_AVS_CLIENT_ID'
 const ALEXA_AVS_AVS_REFRESH_TOKEN = 'ALEXA_AVS_AVS_REFRESH_TOKEN'

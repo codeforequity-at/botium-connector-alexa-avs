@@ -1,5 +1,5 @@
 const yargs = require('yargs')
-const amazonAuthorize = require('./Authorize')
+const amazonAuthorize = require('./auth/cbl/authentication')
 const AVS = require('./AVS')
 
 const _parseArgs = () => {

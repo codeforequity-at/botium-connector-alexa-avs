@@ -1,11 +1,17 @@
 const getMac = require('getmac')
 const request = require('request')
 
-const _pressAnyKeyToContinue = () => {
-  return new Promise((resolve) => {
-    process.stdin.setRawMode(true)
-    process.stdin.resume()
-    process.stdin.on('data', () => resolve)
+const _prompt = (question) => {
+  return new Promise((resolve, reject) => {
+    const stdin = process.stdin
+    const stdout = process.stdout
+
+    stdin.resume()
+    stdout.write(question + ' ')
+
+    stdin.once('data', data => {
+      resolve(data.toString().trim())
+    })
   })
 }
 
@@ -23,24 +29,29 @@ const _deviceAuthorizationRequest = (clientId, productID) => {
         scope: 'alexa:all',
         scope_data:
         {
-          productID2: productID,
-          productInstanceAttributes:
-            {
-              deviceSerialNumber: macAddress
-            }
+          'alexa:all': {
+            productID: productID,
+            productInstanceAttributes:
+              {
+                deviceSerialNumber: macAddress
+              }
+          }
         }
       }
 
+      // workaround
+      // correct content : {.."scope_data":"{\"alexa:all\":..}
+      // wrong content :   {.."scope_data":{"alexa:all":..}
+      form.scope_data = JSON.stringify(form.scope_data)
       const requestObject =
         {
           method: 'POST',
           headers: {
             'content-type': 'application/x-www-form-urlencoded'
           },
-          uri: `https://api.amazon.com/auth/O2/create/codepair?`,
+          uri: `https://api.amazon.com/auth/O2/create/codepair`,
           form
         }
-      console.log('sent: ' + JSON.stringify(requestObject, null, 2))
       request(requestObject, function (error, response, body) {
         if (error) {
           reject(error)
@@ -77,11 +88,6 @@ const _deviceTokenRequest = (deviceAuthorizationResponse) => {
   }
 */
   return new Promise((resolve, reject) => {
-    if (typeof code !== 'string') {
-      const error = new TypeError('`code` must be a string.')
-      return reject(error)
-    }
-
     const form = {
       grant_type: 'device_code',
       device_code: deviceAuthorizationResponse.device_code,
@@ -161,13 +167,14 @@ module.exports.AccessTokenRefreshRequest = (clientId, refreshToken) => {
           "interval": {{INTEGER}}
         }
 */
-module.exports.RefreshTokenAcquireRequest = (clientId, productID) => {
-  return _deviceAuthorizationRequest(clientId, productID)
-    .then((deviceAuthorizationResponse) => {
-      console.log(`Please login on ${deviceAuthorizationResponse.verification_uri} and enter ${deviceAuthorizationResponse.user_code}`) // Print the HTML for the Google homepage.
-      //      console.log('Press any key after done')
-      //      return _pressAnyKeyToContinue()
-      //        .then(() => deviceAuthorizationResponse)
-    })
-//    .then((deviceAuthorizationResponse) => _deviceTokenRequest(deviceAuthorizationResponse))
+module.exports.RefreshTokenAcquireRequest = async (clientId, productID) => {
+  const deviceAuthorizationResponse = await _deviceAuthorizationRequest(clientId, productID)
+  console.log(`Please login on ${deviceAuthorizationResponse.verification_uri} and enter ${deviceAuthorizationResponse.user_code}`) // Print the HTML for the Google homepage.
+  console.log('Press any key after done')
+  await _prompt('')
+
+  console.log('Acquiring token')
+  const deviceTokenResponse = await _deviceTokenRequest(deviceAuthorizationResponse)
+  console.log('Token acquired: ' + JSON.stringify(deviceTokenResponse))
+  return deviceTokenResponse
 }
