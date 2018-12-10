@@ -1,17 +1,20 @@
 const getMac = require('getmac')
 const request = require('request')
+var keypress = require('keypress')
+// make `process.stdin` begin emitting "keypress" events
+keypress(process.stdin)
 
-const _prompt = (question) => {
+const _keypress = (question) => {
   return new Promise((resolve, reject) => {
-    const stdin = process.stdin
-    const stdout = process.stdout
-
-    stdin.resume()
-    stdout.write(question + ' ')
-
-    stdin.once('data', data => {
-      resolve(data.toString().trim())
+    process.stdin.on('keypress', function (ch, key) {
+      process.stdin.pause()
+      resolve(key)
     })
+
+    if (process.stdin.setRawMode) {
+      process.stdin.setRawMode(true)
+    }
+    process.stdin.resume()
   })
 }
 
@@ -39,9 +42,6 @@ const _deviceAuthorizationRequest = (clientId, productID) => {
         }
       }
 
-      // workaround
-      // correct content : {.."scope_data":"{\"alexa:all\":..}
-      // wrong content :   {.."scope_data":{"alexa:all":..}
       form.scope_data = JSON.stringify(form.scope_data)
       const requestObject =
         {
@@ -168,10 +168,11 @@ module.exports.AccessTokenRefreshRequest = (clientId, refreshToken) => {
         }
 */
 module.exports.RefreshTokenAcquireRequest = async (clientId, productID) => {
+  console.log('Authorizing device, please wait...')
   const deviceAuthorizationResponse = await _deviceAuthorizationRequest(clientId, productID)
   console.log(`Please login on ${deviceAuthorizationResponse.verification_uri} and enter ${deviceAuthorizationResponse.user_code}`) // Print the HTML for the Google homepage.
-  console.log('Press any key after done')
-  await _prompt('')
+  console.log('Press enter after done')
+  await _keypress(' ')
 
   console.log('Acquiring token')
   const deviceTokenResponse = await _deviceTokenRequest(deviceAuthorizationResponse)

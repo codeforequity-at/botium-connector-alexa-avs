@@ -1,4 +1,5 @@
 const yargs = require('yargs')
+
 const amazonAuthorize = require('./auth/cbl/authentication')
 const AVS = require('./AVS')
 
@@ -18,12 +19,6 @@ const _parseArgs = () => {
   )
 }
 
-//if (!process.stdin.setRawMode) {
-  if (false) {
-  console.log('Start in terminal!!!')
-  process.exit(-1)
-}
-
 let args
 _parseArgs()
   .then((result) => {
@@ -31,9 +26,8 @@ _parseArgs()
     return amazonAuthorize.RefreshTokenAcquireRequest(result.c, result.p)
   })
   .then((deviceTokenResponse) => {
-    //console.log(`Refresh token acquired`)
-    //console.log(`The proper Capabilities:`)
-    //console.log(`${AVS.ALEXA_AVS_AVS_CLIENT_ID} = ${args.c}`)
-    //console.log(`${AVS.ALEXA_AVS_AVS_REFRESH_TOKEN} = ${deviceTokenResponse.c}`)
+    console.log(`Capabilities:`)
+    console.log(`${AVS.ALEXA_AVS_AVS_CLIENT_ID} = ${args.c}`)
+    console.log(`${AVS.ALEXA_AVS_AVS_REFRESH_TOKEN} = ${deviceTokenResponse.refresh_token}`)
   })
   .catch((err) => console.log(err))
