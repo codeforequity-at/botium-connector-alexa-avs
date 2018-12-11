@@ -32,9 +32,6 @@ class AVS {
   Ask (audio) {
     return new Promise((resolve, reject) => {
       const formData = {
-        headers: {
-          'authorization': `Bearer ${this.accessToken}`
-        },
         metadata: {
           'messageHeader': {},
           'messageBody': {
@@ -45,12 +42,23 @@ class AVS {
         },
         audio
       }
-      request.post({url: 'https://access-alexa-na.amazon.com/v1/avs/speechrecognizer/recognize', formData: formData}, function optionalCallback (err, httpResponse, body) {
-        if (err) {
-          return reject(err)
-        }
-        return resolve(body)
-      })
+      formData.metadata = JSON.stringify(formData.metadata)
+
+      request(
+        {
+          method: 'POST',
+          url: 'https://access-alexa-na.amazon.com/v1/avs/speechrecognizer/recognize',
+          headers: {
+            'authorization': `Bearer ${this.accessToken}`
+          },
+          formData: formData
+        },
+        function optionalCallback (err, httpResponse, body) {
+          if (err) {
+            return reject(err)
+          }
+          return resolve(body)
+        })
     })
   }
 }

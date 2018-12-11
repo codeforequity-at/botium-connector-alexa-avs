@@ -1,6 +1,3 @@
-const fs = require('fs')
-
-// Imports the Google Cloud client library
 const textToSpeech = require('@google-cloud/text-to-speech')
 
 const Capabilities = {
@@ -38,18 +35,13 @@ class GoogleCloudTextToSpeech {
   }
 
   Synthesize (text) {
-    this.client.synthesizeSpeech(Object.assign({text}, this.defaultRequest), (err, response) => {
-      if (err) {
-        throw err
-      }
-
-      // Write the binary audio content to a local file
-      fs.writeFile('output.mp3', response.audioContent, 'binary', err => {
+    return new Promise((resolve, reject) => {
+      this.client.synthesizeSpeech(Object.assign({input: {text}}, this.defaultRequest), (err, response) => {
         if (err) {
-          console.error('ERROR:', err)
-          return
+          return reject(err)
         }
-        console.log('Audio content written to file: output.mp3')
+
+        return resolve(response.audioContent)
       })
     })
   }

@@ -28,7 +28,7 @@ class BotiumConnectorAlexaAvs {
     this.stt = new (require('./src/stt/' + _toModuleName(this.caps[Capabilities.ALEXA_AVS_STT])))(this.caps)
     this.stt.Validate()
 
-    this.avs = new (require('./src/avs')).AVS(this.caps)
+    this.avs = new (require('./src/avs/AVS')).AVS(this.caps)
     this.avs.Validate()
 
     return Promise.resolve()
@@ -37,11 +37,7 @@ class BotiumConnectorAlexaAvs {
   Build () {
     debug('Build called')
 
-    this.tts.Build()
-    this.stt.Build()
-    this.avs.Build()
-
-    return Promise.resolve()
+    return Promise.all([this.tts.Build(), this.stt.Build(), this.avs.Build()])
   }
 
   Start () {
@@ -57,10 +53,18 @@ class BotiumConnectorAlexaAvs {
     calling avs
     executing speech-to-text
      */
+    debug(`User text ${userAsText} converting to speech...`)
     return this.tts.Synthesize(userAsText)
-      .then((userAsSpeech) => this.avs.Ask(userAsSpeech))
-      .then((botAsSpeech) => this.stt.Recognize(botAsSpeech))
-      .then((botAsText) => this.queueBotSays(botAsText))
+      .then((userAsSpeech) => {
+        debug(`User text ${userAsText} converted to speech succesful`)
+        debug(`Alexa answering...`)
+        return this.avs.Ask(userAsSpeech)
+      })
+      .then((botAsText) => {
+        debug(`Alexa answered succesful`)
+        setTimeout(() => this.queueBotSays(botAsText), 0)
+        return botAsText
+      })
   }
 
   Stop () {

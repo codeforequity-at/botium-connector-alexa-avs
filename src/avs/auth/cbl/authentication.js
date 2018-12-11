@@ -118,11 +118,6 @@ const _deviceTokenRequest = (deviceAuthorizationResponse) => {
 
 module.exports.AccessTokenRefreshRequest = (clientId, refreshToken) => {
   return new Promise((resolve, reject) => {
-    if (typeof code !== 'string') {
-      const error = new TypeError('`code` must be a string.')
-      return reject(error)
-    }
-
     const form = {
       grant_type: 'refresh_token',
       refresh_token: refreshToken,

@@ -2,8 +2,7 @@ const yargs = require('yargs')
 const jsonutil = require('jsonutil')
 
 const amazonAuth = require('../avs/auth/cbl/authentication')
-const AVS = require('../avs/AVS')
-const DEFAULT_LANGUAGE_CODE = 'en_us'
+const DEFAULT_LANGUAGE_CODE = 'en_US'
 const DEFAULT_AMAZON_CONFIG = '../../cfg/config.json'
 const DEFAULT_GOOGLE_CONFIG = '../../cfg/googleConfig.json'
 
@@ -49,10 +48,10 @@ _parseArgs()
       ALEXA_AVS_AVS_REFRESH_TOKEN: deviceTokenResponse.refresh_token,
       ALEXA_AVS_AVS_LANGUAGE_CODE: args.l,
       ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY: googleConfigJson.private_key,
-      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL: '',
+      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL: googleConfigJson.client_email,
       ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE: args.l,
       ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY: googleConfigJson.private_key,
-      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: '',
+      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: googleConfigJson.client_email,
       ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: args.l
     }
     console.log(`Capabilities:\n ${JSON.stringify(caps, null, 2)}`)
