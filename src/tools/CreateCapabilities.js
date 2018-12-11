@@ -1,7 +1,7 @@
 const yargs = require('yargs')
 const jsonutil = require('jsonutil')
 
-const amazonAuth = require('../avs/auth/cbl/authentication')
+const amazonAuth = require('../avs/authentication')
 const DEFAULT_LANGUAGE_CODE = 'en_US'
 const DEFAULT_AMAZON_CONFIG = '../../cfg/config.json'
 const DEFAULT_GOOGLE_CONFIG = '../../cfg/googleConfig.json'
