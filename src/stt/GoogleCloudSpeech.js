@@ -38,7 +38,7 @@ class GoogleCloudSpeech {
 
   Recognize (audio) {
     return new Promise((resolve) => {
-      this.client.recognize(Object.assign({audio}, this.defaultRequest))
+      this.client.recognize(Object.assign({audio: {content: audio}}, this.defaultRequest))
         .then(data => {
           const response = data[0]
           const transcription = response.results

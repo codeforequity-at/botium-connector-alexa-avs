@@ -48,11 +48,6 @@ class BotiumConnectorAlexaAvs {
 
   UserSays (userAsText) {
     debug('UserSays called')
-    /*
-    executing text-to-speech
-    calling avs
-    executing speech-to-text
-     */
     debug(`User text ${userAsText} converting to speech...`)
     return this.tts.Synthesize(userAsText)
       .then((userAsSpeech) => {
@@ -60,10 +55,14 @@ class BotiumConnectorAlexaAvs {
         debug(`Alexa answering...`)
         return this.avs.Ask(userAsSpeech)
       })
-      .then((botAsText) => {
+      .then((botAsSpeech) => {
         debug(`Alexa answered succesful`)
-        setTimeout(() => this.queueBotSays(botAsText), 0)
-        return botAsText
+        debug(`Answer converting to text...`)
+        return this.stt.Recognize(botAsSpeech)
+      })
+      .then((botAsText) => {
+        debug(`Answer converted to text ${botAsText} succesful`)
+        return this.queueBotSays(botAsText)
       })
   }
 

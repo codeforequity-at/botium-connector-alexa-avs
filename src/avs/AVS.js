@@ -2,7 +2,8 @@
 
 const request = require('request')
 
-const {AccessTokenRefreshRequest} = require('./auth/cbl/authentication')
+const {AccessTokenRefreshRequest} = require('./authentication')
+const parser = require('../utils/http-message-parser')
 
 const ALEXA_AVS_AVS_CLIENT_ID = 'ALEXA_AVS_AVS_CLIENT_ID'
 const ALEXA_AVS_AVS_REFRESH_TOKEN = 'ALEXA_AVS_AVS_REFRESH_TOKEN'
@@ -57,7 +58,7 @@ class AVS {
           if (err) {
             return reject(err)
           }
-          return resolve(body)
+          return resolve(parser(body).multipart[1].body)
         })
     })
   }

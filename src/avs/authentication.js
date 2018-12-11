@@ -1,4 +1,5 @@
 const getMac = require('getmac')
+const parser = require('../utils/http-message-parser')
 const request = require('request')
 var keypress = require('keypress')
 // make `process.stdin` begin emitting "keypress" events
