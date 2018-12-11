@@ -1,10 +1,11 @@
 const yargs = require('yargs')
+const jsonutil = require('jsonutil')
 
 const amazonAuth = require('../avs/auth/cbl/authentication')
 const AVS = require('../avs/AVS')
 const DEFAULT_LANGUAGE_CODE = 'en_us'
 const DEFAULT_AMAZON_CONFIG = '../../cfg/config.json'
-const DEFAULT_GOOGLE_CONFIG = '../../cfg/file.json'
+const DEFAULT_GOOGLE_CONFIG = '../../cfg/googleConfig.json'
 
 const _parseArgs = () => {
   return Promise.resolve(
@@ -37,25 +38,23 @@ let googleConfigJson
 _parseArgs()
   .then((result) => {
     args = result
-    amazonConfigJson = require(result.a)
-    googleConfigJson = require(result.g)
-    return amazonAuth.RefreshTokenAcquireRequest(amazonConfigJson.clientId, amazonConfigJson.productId)
+    amazonConfigJson = jsonutil.readFileSync(result.a)
+    googleConfigJson = jsonutil.readFileSync(result.g)
+    return amazonAuth.RefreshTokenAcquireRequest(amazonConfigJson.deviceInfo.clientId, amazonConfigJson.deviceInfo.productId)
   })
   .then((deviceTokenResponse) => {
     const caps =
     {
-      ALEXA_AVS_AVS_CLIENT_ID: args.c,
+      ALEXA_AVS_AVS_CLIENT_ID: amazonConfigJson.deviceInfo.clientId,
       ALEXA_AVS_AVS_REFRESH_TOKEN: deviceTokenResponse.refresh_token,
       ALEXA_AVS_AVS_LANGUAGE_CODE: args.l,
-      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY: args.p,
+      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY: googleConfigJson.private_key,
       ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL: '',
       ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE: args.l,
-      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY: args.p,
+      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY: googleConfigJson.private_key,
       ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: '',
       ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: args.l
     }
-    console.log(`Capabilities:\n ${caps}`)
-    console.log(`${AVS.ALEXA_AVS_AVS_CLIENT_ID} = ${args.c}`)
-    console.log(`${AVS.ALEXA_AVS_AVS_REFRESH_TOKEN} = ${deviceTokenResponse.refresh_token}`)
+    console.log(`Capabilities:\n ${JSON.stringify(caps, null, 2)}`)
   })
   .catch((err) => console.log(err))
