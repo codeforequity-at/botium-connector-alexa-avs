@@ -1,26 +1,25 @@
 const yargs = require('yargs')
 
-const amazonAuthorize = require('../avs/auth/cbl/authentication')
+const amazonAuth = require('../avs/auth/cbl/authentication')
 const AVS = require('../avs/AVS')
 const DEFAULT_LANGUAGE_CODE = 'en_us'
+const DEFAULT_AMAZON_CONFIG = '../../cfg/config.json'
+const DEFAULT_GOOGLE_CONFIG = '../../cfg/file.json'
 
 const _parseArgs = () => {
   return Promise.resolve(
     yargs.usage(
-      'Usage: $0 -c [str] -p [str] -g [str] -l [str]')
-      .demandOption(['c', 'p', 'g'])
+      'Usage: $0 -a [str] -g [str] -l [str]')
 
-      .alias('c', 'client-id')
-      .nargs('c', 1)
-      .describe('c', 'Amazon AVS Client id')
+      .alias('a', 'amazon-config')
+      .nargs('a', 1)
+      .describe('a', 'Amazon config file')
+      .default('a', DEFAULT_AMAZON_CONFIG)
 
-      .alias('p', 'product-id')
-      .nargs('p', 1)
-      .describe('p', 'Amazon AVS Product id')
-
-      .alias('g', 'google-cloud-private-key')
+      .alias('g', 'google-config')
       .nargs('g', 1)
-      .describe('g', 'Google cloud private key with TextToSpeech, and Speech enabled')
+      .describe('g', 'Google config file')
+      .default('g', DEFAULT_GOOGLE_CONFIG)
 
       .alias('l', 'language-code')
       .nargs('l', 1)
@@ -33,10 +32,14 @@ const _parseArgs = () => {
 }
 
 let args
+let amazonConfigJson
+let googleConfigJson
 _parseArgs()
   .then((result) => {
     args = result
-    return amazonAuthorize.RefreshTokenAcquireRequest(result.c, result.p)
+    amazonConfigJson = require(result.a)
+    googleConfigJson = require(result.g)
+    return amazonAuth.RefreshTokenAcquireRequest(amazonConfigJson.clientId, amazonConfigJson.productId)
   })
   .then((deviceTokenResponse) => {
     const caps =
