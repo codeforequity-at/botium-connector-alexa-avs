@@ -30,7 +30,7 @@ class GoogleCloudTextToSpeech {
       // Select the language and SSML Voice Gender (optional)
       voice: {languageCode: this.caps[Capabilities.ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE], ssmlGender: 'NEUTRAL'},
       // Select the type of audio encoding
-      audioConfig: {audioEncoding: 'MP3'}
+      audioConfig: {audioEncoding: 'LINEAR16'}
     }
   }
 

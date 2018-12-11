@@ -51,9 +51,9 @@ class AVS {
           headers: {
             'authorization': `Bearer ${this.accessToken}`
           },
-          formData: formData
-        },
-        function optionalCallback (err, httpResponse, body) {
+          formData: formData,
+          json: true
+        }, (err, httpResponse, body) => {
           if (err) {
             return reject(err)
           }
