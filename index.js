@@ -1,4 +1,5 @@
 const debug = require('debug')('botium-connector-alexa_avs')
+const _ = require('lodash')
 
 const Capabilities = {
   ALEXA_AVS_TTS: 'ALEXA_AVS_TTS',
@@ -19,14 +20,15 @@ class BotiumConnectorAlexaAvs {
   Validate () {
     debug('Validate called')
     if (!this.caps[Capabilities.ALEXA_AVS_TTS]) this.caps[Capabilities.ALEXA_AVS_TTS] = Defaults[Capabilities.ALEXA_AVS_TTS]
+    if (!this.caps[Capabilities.ALEXA_AVS_STT]) this.caps[Capabilities.ALEXA_AVS_STT] = Defaults[Capabilities.ALEXA_AVS_STT]
 
-    this.tts = new (require('./tts/' + _.startCase(Capabilities.ALEXA_AVS_TTS)))(this.caps)
+    this.tts = new (require('./src/tts/' + _toModuleName(this.caps[Capabilities.ALEXA_AVS_TTS])))(this.caps)
     this.tts.Validate()
 
-    this.stt = new (require('./stt/' + _.startCase(Capabilities.ALEXA_AVS_STT)))(this.caps)
+    this.stt = new (require('./src/stt/' + _toModuleName(this.caps[Capabilities.ALEXA_AVS_STT])))(this.caps)
     this.stt.Validate()
 
-    this.avs = new (require('./AVS')).AVS(this.caps)
+    this.avs = new (require('./src/avs')).AVS(this.caps)
     this.avs.Validate()
 
     return Promise.resolve()
@@ -77,6 +79,16 @@ class BotiumConnectorAlexaAvs {
   }
 }
 
+// ALEXA_AVS_TTS
+// ->
+// AlexaAvsTts
+const _toModuleName = (capsName) => {
+  return capsName
+    .split('_')
+    .map((item) => _.toLower(item))
+    .map((item) => _.upperFirst(item))
+    .join('')
+}
 module.exports = {
   PluginVersion: 1,
   PluginClass: BotiumConnectorAlexaAvs
