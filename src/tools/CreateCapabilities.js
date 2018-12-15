@@ -1,7 +1,7 @@
 const yargs = require('yargs')
 const jsonutil = require('jsonutil')
 
-const amazonAuth = require('../avs/authentication')
+const amazonCore = require('../avs/core')
 const DEFAULT_LANGUAGE_CODE = 'en_US'
 const DEFAULT_AMAZON_CONFIG = '../../cfg/config.json'
 const DEFAULT_GOOGLE_CONFIG = '../../cfg/googleConfig.json'
@@ -39,7 +39,7 @@ _parseArgs()
     args = result
     amazonConfigJson = jsonutil.readFileSync(result.a)
     googleConfigJson = jsonutil.readFileSync(result.g)
-    return amazonAuth.RefreshTokenAcquireRequest(amazonConfigJson.deviceInfo.clientId, amazonConfigJson.deviceInfo.productId)
+    return amazonCore.RefreshTokenAcquireRequest(amazonConfigJson.deviceInfo.clientId, amazonConfigJson.deviceInfo.productId)
   })
   .then((deviceTokenResponse) => {
     const caps =
@@ -54,6 +54,9 @@ _parseArgs()
       ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: googleConfigJson.client_email,
       ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: args.l
     }
-    console.log(`Capabilities:\n ${JSON.stringify(caps, null, 2)}`)
+    console.log(`Botium Capabilities:\n ${JSON.stringify(caps, null, 2)}`)
+
+    return amazonCore.SendCapabilities(deviceTokenResponse.access_token)
+      .then(() => console.log(`Amazon Capabilities set`))
   })
   .catch((err) => console.log(err))
