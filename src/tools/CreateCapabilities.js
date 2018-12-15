@@ -42,21 +42,25 @@ _parseArgs()
     return amazonCore.RefreshTokenAcquireRequest(amazonConfigJson.deviceInfo.clientId, amazonConfigJson.deviceInfo.productId)
   })
   .then((deviceTokenResponse) => {
-    const caps =
-    {
-      ALEXA_AVS_AVS_CLIENT_ID: amazonConfigJson.deviceInfo.clientId,
-      ALEXA_AVS_AVS_REFRESH_TOKEN: deviceTokenResponse.refresh_token,
-      ALEXA_AVS_AVS_LANGUAGE_CODE: args.l,
-      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY: googleConfigJson.private_key,
-      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL: googleConfigJson.client_email,
-      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE: args.l,
-      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY: googleConfigJson.private_key,
-      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: googleConfigJson.client_email,
-      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: args.l
-    }
-    console.log(`Botium Capabilities:\n ${JSON.stringify(caps, null, 2)}`)
-
+    console.log(`Amazon Capabilities sending...`)
     return amazonCore.SendCapabilities(deviceTokenResponse.access_token)
-      .then(() => console.log(`Amazon Capabilities set`))
+      .then(() => {
+        console.log(`Amazon Capabilities sent`)
+      })
+      .then(() => {
+        const caps =
+          {
+            ALEXA_AVS_AVS_CLIENT_ID: amazonConfigJson.deviceInfo.clientId,
+            ALEXA_AVS_AVS_REFRESH_TOKEN: deviceTokenResponse.refresh_token,
+            ALEXA_AVS_AVS_LANGUAGE_CODE: args.l,
+            ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY: googleConfigJson.private_key,
+            ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL: googleConfigJson.client_email,
+            ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE: args.l,
+            ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY: googleConfigJson.private_key,
+            ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: googleConfigJson.client_email,
+            ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: args.l
+          }
+        console.log(`Botium Capabilities:\n ${JSON.stringify(caps, null, 2)}`)
+      })
   })
   .catch((err) => console.log(err))
