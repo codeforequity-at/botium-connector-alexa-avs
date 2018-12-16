@@ -56,25 +56,27 @@ class AVS {
         this.client.on('error', (err) => console.error(`Client Error ${err}`))
         this.client.on('socketError', (err) => console.error(`Client Socket Error ${err}`))
         this.client.on('goaway', (err) => console.error(`Client GoAway ${err}`))
+        this.client.on('response', (headers, flags) => console.log('Client response'))
+        this.client.on('data', (chunk) => console.log('Client data'))
+        this.client.on('end', (chunk) => console.log('Client end'))
+
 
         // 3) creating downchannel
         const options = {
           method: 'GET',
           scheme: 'https',
           path: '/v20160207/directives',
-          auth: 'Bearer ' + this.accessToken
+          authorization: 'Bearer ' + this.accessToken
         }
 
+        console.log(`creating downchannel ${JSON.stringify(options, null, 2)}`)
         var req = this.client.request(options)
         req.on('error', (e) => console.error(`Downchannel error ${e}`))
         req.on('socketError', (e) => console.error(`Downchannel socket error ${e}`))
         req.on('goaway', (e) => console.error(`Downchannel goaway ${e}`))
-        req.on('data', function (chunk) {
-          console.log('Downchannel data')
-        })
-        req.on('end', () => {
-          console.log(`Downchannel end`)
-        })
+        req.on('response', (headers, flags) => console.log(`Downchannel response ${JSON.stringify(headers)}`))
+        req.on('data', (chunk) => console.log('Downchannel data'))
+        req.on('end', (chunk) => console.log('Downchannel end'))
         req.end()
 
         // 4) synchronize states
@@ -139,11 +141,11 @@ class AVS {
         }
 
         const eventReq = this.client.request(eventOptions)
-
-        eventReq.on('error', (e) => {
-          console.error(e)
-        })
-
+        eventReq.on('error', (e) => console.error(`Downchannel error ${e}`))
+        eventReq.on('socketError', (e) => console.error(`Downchannel socket error ${e}`))
+        eventReq.on('goaway', (e) => console.error(`Downchannel goaway ${e}`))
+        eventReq.on('data', (chunk) => console.log('Downchannel data'))
+        eventReq.on('end', (chunk) => console.log('Downchannel end'))
         eventReq.on('response', (headers, flags) => {
           console.log('HEADERS: ' + JSON.stringify(headers))
           eventReq.setEncoding('utf8')
