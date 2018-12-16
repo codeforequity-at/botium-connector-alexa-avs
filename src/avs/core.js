@@ -184,13 +184,13 @@ module.exports.AccessTokenRefreshRequest = (clientId, refreshToken) => {
          }
 */
 module.exports.RefreshTokenAcquireRequest = async (clientId, productID) => {
-  console.log('Authorizing device, please wait...')
+  console.log('Authorizing device...')
   const deviceAuthorizationResponse = await _deviceAuthorizationRequest(clientId, productID)
   console.log(`Please login on ${deviceAuthorizationResponse.verification_uri} and enter ${deviceAuthorizationResponse.user_code}`) // Print the HTML for the Google homepage.
   console.log('Press enter after done')
   await _keypress(' ')
 
-  console.log('Acquiring token')
+  console.log('Acquiring token...')
   const deviceTokenResponse = await _deviceTokenRequest(deviceAuthorizationResponse)
   console.log('Token acquired: ' + JSON.stringify(deviceTokenResponse))
   return Object.assign(deviceAuthorizationResponse, deviceTokenResponse)
@@ -221,7 +221,6 @@ const SendCapabilities = (accessToken, retryDelay = 0.5) => {
         if (error) {
           return reject(error)
         }
-        console.log(response.statusCode)
         if (response.statusCode === 204) {
           return resolve()
         }

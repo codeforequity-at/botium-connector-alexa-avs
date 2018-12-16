@@ -28,7 +28,7 @@ class BotiumConnectorAlexaAvs {
     this.stt = new (require('./src/stt/' + _toModuleName(this.caps[Capabilities.ALEXA_AVS_STT])))(this.caps)
     this.stt.Validate()
 
-    this.avs = new (require('./src/avs/AVS')).AVS(this.caps)
+    this.avs = new (require('./src/avs/AVSSpeechClient')).AVS(this.caps)
     this.avs.Validate()
 
     return Promise.resolve()
