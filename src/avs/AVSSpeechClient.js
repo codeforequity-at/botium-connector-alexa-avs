@@ -60,13 +60,12 @@ class AVS {
         this.client.on('data', (chunk) => console.log('Client data'))
         this.client.on('end', (chunk) => console.log('Client end'))
 
-
         // 3) creating downchannel
         const options = {
-          method: 'GET',
-          scheme: 'https',
-          path: '/v20160207/directives',
-          authorization: 'Bearer ' + this.accessToken
+          ':method': 'GET',
+          ':scheme': 'https',
+          ':path': '/v20160207/directives',
+          'authorization': 'Bearer ' + this.accessToken
         }
 
         console.log(`creating downchannel ${JSON.stringify(options, null, 2)}`)
@@ -132,9 +131,9 @@ class AVS {
         })
 
         var eventOptions = {
-          path: '/v20160207/events',
-          scheme: 'https',
-          method: 'POST',
+          ':path': '/v20160207/events',
+          ':scheme': 'https',
+          ':method': 'POST',
           'Authorization': 'Bearer ' + this.accessToken,
           'Content-Type': 'multipart/form-data',
           'boundary': form.getBoundary()
@@ -159,7 +158,6 @@ class AVS {
   }
 
   Ask (audio) {
-    if (true) return Promise.resolve()
     return new Promise((resolve, reject) => {
       const formData = _getFormData(audio, this.messageId++)
       const options = _getSpeechRecognizer(this.accessToken, formData)
