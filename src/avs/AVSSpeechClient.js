@@ -2,7 +2,7 @@
 
 const http2 = require('http2')
 const FormData = require('form-data')
-const formidable = require('formidable')
+const httpParser = require('http-message-parser')
 
 const {AccessTokenRefreshRequest} = require('./core')
 
@@ -68,7 +68,7 @@ class AVS {
           'authorization': 'Bearer ' + this.accessToken
         }
 
-        console.log(`creating downchannel ${JSON.stringify(options, null, 2)}`)
+        console.log(`Creating downchannel ${JSON.stringify(options, null, 2)}`)
         var req = this.client.request(options)
         req.on('error', (e) => console.error(`Downchannel error ${e}`))
         req.on('socketError', (e) => console.error(`Downchannel socket error ${e}`))
@@ -79,138 +79,132 @@ class AVS {
         req.end()
 
         // 4) synchronize states
-        const eventData = JSON.stringify(
-          {
-            'context': [
-              {
-                'header': {
-                  'name': 'PlaybackState',
-                  'namespace': 'AudioPlayer'
-                },
-                'payload': {
-                  'token': '',
-                  'offsetInMilliseconds': 0,
-                  'playerActivity': 'IDLE'
-                }
-              }, {
-                'header': {
-                  'name': 'SpeechState',
-                  'namespace': 'SpeechSynthesizer'
-                },
-                'payload': {
-                  'token': '',
-                  'offsetInMilliseconds': 0,
-                  'playerActivity': 'FINISHED'
-                }
-              }, {
-                'header': {
-                  'namespace': 'SpeechRecognizer',
-                  'name': 'RecognizerState'
-                },
-                'payload': {
-                  'wakeword': 'ALEXA'
-                }
-              }
-            ],
-            'event': {
-              'header': {
-                'messageId': 'message123',
-                'name': 'SynchronizeState',
-                'namespace': 'System'
-              },
-              'payload': {}
-            }
-          }
-        )
-
-        var form = new FormData()
-        form.append('metadata', eventData, {
-          contentType: 'application/json; charset=UTF-8',
-          knownLength: Buffer.byteLength(eventData),
-          charset: 'UTF-8'
-        })
-
-        var eventOptions = {
-          ':path': '/v20160207/events',
-          ':scheme': 'https',
-          ':method': 'POST',
-          'Authorization': 'Bearer ' + this.accessToken,
-          'Content-Type': 'multipart/form-data',
-          'boundary': form.getBoundary()
-        }
-
-        const eventReq = this.client.request(eventOptions)
-        eventReq.on('error', (e) => console.error(`SynchStates error ${e}`))
-        eventReq.on('socketError', (e) => console.error(`SynchStates socket error ${e}`))
-        eventReq.on('goaway', (e) => console.error(`SynchStates goaway ${e}`))
-        eventReq.on('data', (chunk) => console.log('SynchStates data'))
-        eventReq.on('end', (chunk) => console.log('SynchStates end'))
-        eventReq.on('response', (headers, flags) => {
-          eventReq.setEncoding('utf8')
-          eventReq.on('data', function (chunk) {
-            console.log(`SynchStates data ${chunk}`)
-          })
-        })
-        eventReq.end()
       })
   }
 
   Ask (audio) {
     return new Promise((resolve, reject) => {
-      const formData = _getFormData(audio, this.messageId++)
-      const options = _getSpeechRecognizer(this.accessToken, formData)
-      const req = this.client.request(options, function (res) {
-        console.log('STATUS: ' + res.statusCode)
-        console.log('HEADERS: ' + JSON.stringify(res.headers))
-        const form = new formidable.IncomingForm()
-        form.parse(res, (err, fields, files) => {
-          if (err) {
-            reject(err)
+      var metadata = JSON.stringify(
+        {
+          'context': [
+            {
+              'header': {
+                'namespace': 'SpeechRecognizer',
+                'name': 'RecognizerState'
+              },
+              'payload': {
+
+              }
+            },
+            {
+              'header': {
+                'namespace': 'Speaker',
+                'name': 'VolumeState'
+              },
+              'payload': {
+                'volume': 10,
+                'muted': false
+              }
+            },
+            {
+              'header': {
+                'namespace': 'Alerts',
+                'name': 'AlertsState'
+              },
+              'payload': {
+                'allAlerts': [],
+                'activeAlerts': []
+              }
+            },
+            {
+              'header': {
+                'namespace': 'SpeechSynthesizer',
+                'name': 'SpeechState'
+              },
+              'payload': {
+                'token': '',
+                'offsetInMilliseconds': 0,
+                'playerActivity': 'FINISHED'
+              }
+            },
+            {
+              'header': {
+                'namespace': 'AudioPlayer',
+                'name': 'PlaybackState'
+              },
+              'payload': {
+                'token': '',
+                'offsetInMilliseconds': 0,
+                'playerActivity': 'IDLE'
+              }
+            }
+          ],
+          'event': {
+            'header': {
+              'namespace': 'SpeechRecognizer',
+              'name': 'Recognize',
+              'messageId': '1eff3c5e-02e3-4dd3-9ca0-7c38937f005f',
+              'dialogRequestId': 'a905c2bb-1bbd-45cf-9f85-6563d2546492'
+            },
+            'payload': {
+              'profile': 'FAR_FIELD',
+              'format': 'AUDIO_L16_RATE_16000_CHANNELS_1'
+            }
           }
-          resolve(files.sound)
         })
+      var data = '--this-is-my-boundary-for-alexa\r\n'
+      data += 'Content-Disposition: form-data; name="metadata"\r\n'
+      data += 'Content-Type: application/json; charset=UTF-8\r\n\r\n'
+      data += metadata
+      data += '\r\n'
+      data += '--this-is-my-boundary-for-alexa\r\n'
+      data += 'Content-Disposition: form-data; name="audio"\r\n'
+      data += 'Content-Type:application/octet-stream\r\n\r\n'
+      var payload = Buffer.concat([
+        Buffer.from(data, 'utf8'),
+        new Buffer(audio, 'binary'),
+        Buffer.from('\r\n--this-is-my-boundary-for-alexa\r\n', 'utf8')
+      ])
+
+      this.client.on('error', (err) => console.error({payload: err}))
+      this.client.on('socketError', (err) => console.error({payload: err}))
+
+      var request = {
+        ':method': 'POST',
+        ':scheme': 'https',
+        ':path': '/v20160207/events',
+        'authorization': `Bearer  ${this.accessToken}`,
+        'content-type': 'multipart/form-data; boundary=this-is-my-boundary-for-alexa'
+      }
+
+      var req = this.client.request(request)
+
+      req.on('error', (e) => console.error(`Ask error ${e}`))
+      req.on('socketError', (e) => console.error(`Ask socket error ${e}`))
+      req.on('goaway', (e) => console.error(`Ask goaway ${e}`))
+      req.on('response', (headers, flags) => console.log(`Ask response ${JSON.stringify(headers)}`))
+      let outdata
+      req.on('data', (chunk) => {
+        console.log('Ask data')
+        outdata = outdata ? Buffer.concat(outdata, chunk) : chunk
       })
-      formData.pipe(req)
+      req.on('end', () => {
+        if (outdata.length) {
+          console.log(`Ask end <<<\n${outdata}\n>>>`)
+          const parsedMessage = httpParser(outdata)
+          console.log(`Ask end, parsed ${parsedMessage}`)
+          const audioBuffer = parsedMessage.multipart[1].body
+          require('fs').writeFile('AlexaSaid.mp3', audioBuffer, () => {
+            resolve(audioBuffer)
+          })
+
+        }
+      })
+
+      req.write(payload)
+      req.end()
     })
   }
-}
-
-const _getFormData = (soundAsBuffer, messageId) => {
-  const requestData = Buffer.from(JSON.stringify(Object.assign({}, BASE_REQUEST_DATA, {event: {header: {messageId}}})))
-  const formData = new FormData()
-
-  formData.append('metadata', requestData,
-    {
-      contentType: 'application/json; charset=UTF-8',
-      knownLength: Buffer.byteLength(requestData)
-    }
-  )
-  console.log('metadata size = ', Buffer.byteLength(requestData))
-
-  formData.append('audio', soundAsBuffer,
-    {
-      contentType: 'application/octet-stream',
-      knownLength: Buffer.byteLength(soundAsBuffer)
-    })
-  return formData
-}
-
-const _getSpeechRecognizer = (accessToken, formData) => {
-  const options =
-    {
-      host: 'avs-alexa-na.amazon.com',
-      path: '/v20160207/events',
-      scheme: 'https',
-      // key: fs.readFileSync(config.sslKey),
-      // cert: fs.readFileSync(config.sslCert),
-      method: 'POST',
-      headers:
-        {
-          'Authorization': 'Bearer ' + accessToken,
-          'Content-Type': 'multipart/form-data; boundary=' + formData.getBoundary()
-        }
-    }
-  return options
 }
 
 module.exports = {
@@ -232,6 +226,17 @@ const avs = new AVS(
     'ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE': 'en_US'
   }
 )
-avs.Validate()
-avs.Build()
-  .catch((err) => console.log(err))
+
+const fs = require('fs')
+
+fs.readFile('asWav.wav', (err, content) => {
+  if (err) {
+    console.error(err)
+  }
+  avs.Validate()
+  avs.Build()
+    .then(() => {
+      return avs.Ask(content)
+    })
+    .catch((err) => console.log(err))
+})
