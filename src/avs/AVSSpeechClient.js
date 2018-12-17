@@ -62,7 +62,7 @@ class AVS {
         req.on('response', (headers, flags) => {
           debug(`Downchannel create status: ${headers.status}`)
         })
-        req.on('data', (chunk) => console.log('Downchannel data'))
+        req.on('data', (chunk) => debug('Downchannel data received'))
         req.on('end', (chunk) => debug('Downchannel closed'))
         req.end()
         debug(`Downchannel creating ${options}`)

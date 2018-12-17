@@ -55,10 +55,15 @@ class BotiumConnectorAlexaAvs {
         debug(`Alexa answering...`)
         return this.avs.UserSays(userAsSpeech)
       })
-      .then((botAsSpeech) => {
+      .then((botAsSpeechMp3) => {
         debug(`Alexa answered succesful`)
+        debug(`Answer converting to wav...`)
+        return _mp3ToWav(botAsSpeechMp3)
+      })
+      .then((botAsSpeechWav) => {
+        debug(`Alexa converted to wav`)
         debug(`Answer converting to text...`)
-        return this.stt.Recognize(botAsSpeech)
+        return this.stt.Recognize(botAsSpeechWav)
       })
       .then((botAsText) => {
         debug(`Answer converted to text ${botAsText} succesful`)
@@ -79,7 +84,6 @@ class BotiumConnectorAlexaAvs {
   Clean () {
     debug('Clean called')
 
-
     this.tts.Clean()
     this.stt.Clean()
     this.avs.Clean()
@@ -90,6 +94,9 @@ class BotiumConnectorAlexaAvs {
 
     return Promise.resolve()
   }
+}
+
+const _mp3ToWav = (mp3AsBuffer) => {
 }
 
 // ALEXA_AVS_TTS
