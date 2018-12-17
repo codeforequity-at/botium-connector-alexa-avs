@@ -140,17 +140,15 @@ class AVS {
         }
 
         const eventReq = this.client.request(eventOptions)
-        eventReq.on('error', (e) => console.error(`Downchannel error ${e}`))
-        eventReq.on('socketError', (e) => console.error(`Downchannel socket error ${e}`))
-        eventReq.on('goaway', (e) => console.error(`Downchannel goaway ${e}`))
-        eventReq.on('data', (chunk) => console.log('Downchannel data'))
-        eventReq.on('end', (chunk) => console.log('Downchannel end'))
+        eventReq.on('error', (e) => console.error(`SynchStates error ${e}`))
+        eventReq.on('socketError', (e) => console.error(`SynchStates socket error ${e}`))
+        eventReq.on('goaway', (e) => console.error(`SynchStates goaway ${e}`))
+        eventReq.on('data', (chunk) => console.log('SynchStates data'))
+        eventReq.on('end', (chunk) => console.log('SynchStates end'))
         eventReq.on('response', (headers, flags) => {
-          console.log('HEADERS: ' + JSON.stringify(headers))
           eventReq.setEncoding('utf8')
           eventReq.on('data', function (chunk) {
-            console.log('event req data')
-            console.log(chunk)
+            console.log(`SynchStates data ${chunk}`)
           })
         })
         eventReq.end()
