@@ -63,7 +63,7 @@ class AVS {
           debug(`Downchannel create status: ${headers.status}`)
         })
         req.on('data', (chunk) => console.log('Downchannel data'))
-        req.on('end', (chunk) => console.log('Downchannel closed'))
+        req.on('end', (chunk) => debug('Downchannel closed'))
         req.end()
         debug(`Downchannel creating ${options}`)
       })
@@ -153,7 +153,7 @@ class AVS {
       data += 'Content-Type:application/octet-stream\r\n\r\n'
       var payload = Buffer.concat([
         Buffer.from(data, 'utf8'),
-        new Buffer(audio, 'binary'),
+        audio,
         Buffer.from('\r\n--this-is-my-boundary-for-alexa\r\n', 'utf8')
       ])
       var request = {
@@ -181,9 +181,13 @@ class AVS {
           const parsedMessage = httpParser(outdata)
           debug(`UserSays response ${parsedMessage}`)
           const audioBuffer = parsedMessage.multipart[1].body
+          // TODO just debug!
           require('fs').writeFile('AlexaSaid.mp3', audioBuffer, () => {
             resolve(audioBuffer)
           })
+        } else {
+          debug(`UserSays response is empty`)
+          resolve(Buffer.alloc(0))
         }
       })
 
@@ -226,19 +230,23 @@ const avs = new AVS(
   }
 )
 
-const fs = require('fs')
+const _test = () => {
+  const fs = require('fs')
 
-fs.readFile('asWav.wav', (err, content) => {
-  if (err) {
-    console.error(err)
-  }
-  avs.Validate()
-  avs.Build()
-    .then(() => {
-      return avs.UserSays(content)
-    })
-    .then(() => {
-      return avs.Clean(content)
-    })
-    .catch((err) => console.log(err))
-})
+  fs.readFile('./test/AlexaWakeUp.wav', (err, content) => {
+    if (err) {
+      console.error(err)
+    }
+    avs.Validate()
+    avs.Build()
+      .then(() => {
+        return avs.UserSays(content)
+      })
+      .then(() => {
+        return avs.Clean(content)
+      })
+      .catch((err) => console.log(err))
+  })
+}
+
+_test()

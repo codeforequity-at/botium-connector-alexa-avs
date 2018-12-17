@@ -20,5 +20,5 @@ const connector = new Connector(
 
 connector.Validate()
   .then(() => connector.Build())
-  .then(() => connector.UserSays('Alexa wake up'))
+  .then(() => connector.UserSays('Alexa alarm'))
   .catch((ex) => console.log(ex))
