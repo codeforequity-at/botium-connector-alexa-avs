@@ -1,29 +1,12 @@
 'use strict'
 
 const http2 = require('http2')
-const FormData = require('form-data')
 const httpParser = require('http-message-parser')
+const debug = require('debug')('botium-connector-alexa-avs-avs')
 
 const {AccessTokenRefreshRequest} = require('./core')
 
 const BASE_URL = 'https://avs-alexa-eu.amazon.com'
-const BASE_REQUEST_DATA = {
-  'event':
-    {
-      'header':
-        {
-          'namespace': 'SpeechRecognizer',
-          'name': 'Recognize',
-          'messageId': 'message-123',
-          'dialogRequestId': 'dialogRequest-321'
-        },
-      'payload':
-        {
-          'profile': 'CLOSE_TALK',
-          'format': 'AUDIO_L16_RATE_16000_CHANNELS_1'
-        }
-    }
-}
 const ALEXA_AVS_AVS_CLIENT_ID = 'ALEXA_AVS_AVS_CLIENT_ID'
 const ALEXA_AVS_AVS_REFRESH_TOKEN = 'ALEXA_AVS_AVS_REFRESH_TOKEN'
 
@@ -40,15 +23,18 @@ class AVS {
   }
 
   Validate () {
+    debug('Validate called')
     if (!this.caps[Capabilities.ALEXA_AVS_AVS_CLIENT_ID]) throw new Error('ALEXA_AVS_AVS_CLIENT_ID capability required')
     if (!this.caps[Capabilities.ALEXA_AVS_AVS_REFRESH_TOKEN]) throw new Error('ALEXA_AVS_AVS_REFRESH_TOKEN capability required')
     if (!this.caps[Capabilities.ALEXA_AVS_AVS_LANGUAGE_CODE]) throw new Error('ALEXA_AVS_AVS_LANGUAGE_CODE capability required')
   }
 
   Build () {
+    debug('Build called')
     // 1) acquiring access token from refresh token
     return AccessTokenRefreshRequest(this.caps[Capabilities.ALEXA_AVS_AVS_CLIENT_ID], this.caps[Capabilities.ALEXA_AVS_AVS_REFRESH_TOKEN])
       .then((result) => {
+        debug('Access token acquired')
         this.accessToken = result.access_token
 
         // 2) creating avs client
@@ -59,6 +45,7 @@ class AVS {
         this.client.on('response', (headers, flags) => console.log('Client response'))
         this.client.on('data', (chunk) => console.log('Client data'))
         this.client.on('end', (chunk) => console.log('Client end'))
+        debug('AVS http2-client created')
 
         // 3) creating downchannel
         const options = {
@@ -68,22 +55,26 @@ class AVS {
           'authorization': 'Bearer ' + this.accessToken
         }
 
-        console.log(`Creating downchannel ${JSON.stringify(options, null, 2)}`)
         var req = this.client.request(options)
         req.on('error', (e) => console.error(`Downchannel error ${e}`))
         req.on('socketError', (e) => console.error(`Downchannel socket error ${e}`))
         req.on('goaway', (e) => console.error(`Downchannel goaway ${e}`))
-        req.on('response', (headers, flags) => console.log(`Downchannel response ${JSON.stringify(headers)}`))
+        req.on('response', (headers, flags) => {
+          debug(`Downchannel create status: ${headers.status}`)
+        })
         req.on('data', (chunk) => console.log('Downchannel data'))
-        req.on('end', (chunk) => console.log('Downchannel end'))
+        req.on('end', (chunk) => console.log('Downchannel closed'))
         req.end()
-
-        // 4) synchronize states
+        debug(`Downchannel creating ${options}`)
       })
   }
 
-  Ask (audio) {
+  UserSays (audio) {
+    debug('UserSays called')
     return new Promise((resolve, reject) => {
+      // data for synchronizing state.
+      // we have stateless client,
+      // so this can be always the same
       var metadata = JSON.stringify(
         {
           'context': [
@@ -165,10 +156,6 @@ class AVS {
         new Buffer(audio, 'binary'),
         Buffer.from('\r\n--this-is-my-boundary-for-alexa\r\n', 'utf8')
       ])
-
-      this.client.on('error', (err) => console.error({payload: err}))
-      this.client.on('socketError', (err) => console.error({payload: err}))
-
       var request = {
         ':method': 'POST',
         ':scheme': 'https',
@@ -177,33 +164,45 @@ class AVS {
         'content-type': 'multipart/form-data; boundary=this-is-my-boundary-for-alexa'
       }
 
+      debug(`UserSays request ${request}`)
       var req = this.client.request(request)
-
-      req.on('error', (e) => console.error(`Ask error ${e}`))
-      req.on('socketError', (e) => console.error(`Ask socket error ${e}`))
-      req.on('goaway', (e) => console.error(`Ask goaway ${e}`))
-      req.on('response', (headers, flags) => console.log(`Ask response ${JSON.stringify(headers)}`))
+      req.on('error', (e) => {
+        return reject(e)
+      })
+      req.on('socketError', (e) => {
+        return reject(e)
+      })
       let outdata
       req.on('data', (chunk) => {
-        console.log('Ask data')
         outdata = outdata ? Buffer.concat(outdata, chunk) : chunk
       })
       req.on('end', () => {
         if (outdata.length) {
-          console.log(`Ask end <<<\n${outdata}\n>>>`)
           const parsedMessage = httpParser(outdata)
-          console.log(`Ask end, parsed ${parsedMessage}`)
+          debug(`UserSays response ${parsedMessage}`)
           const audioBuffer = parsedMessage.multipart[1].body
           require('fs').writeFile('AlexaSaid.mp3', audioBuffer, () => {
             resolve(audioBuffer)
           })
-
         }
       })
 
       req.write(payload)
       req.end()
     })
+  }
+
+  Stop () {
+    debug('Stop called')
+    return Promise.resolve()
+  }
+
+  Clean () {
+    debug('Clean called')
+    this.client.destroy()
+    this.client = null
+    this.accessToken = null
+    return Promise.resolve()
   }
 }
 
@@ -236,7 +235,10 @@ fs.readFile('asWav.wav', (err, content) => {
   avs.Validate()
   avs.Build()
     .then(() => {
-      return avs.Ask(content)
+      return avs.UserSays(content)
+    })
+    .then(() => {
+      return avs.Clean(content)
     })
     .catch((err) => console.log(err))
 })

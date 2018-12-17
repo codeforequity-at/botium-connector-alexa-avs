@@ -1,4 +1,4 @@
-const debug = require('debug')('botium-connector-alexa_avs')
+const debug = require('debug')('botium-connector-alexa-avs-main')
 const _ = require('lodash')
 
 const Capabilities = {
@@ -53,7 +53,7 @@ class BotiumConnectorAlexaAvs {
       .then((userAsSpeech) => {
         debug(`User text ${userAsText} converted to speech succesful`)
         debug(`Alexa answering...`)
-        return this.avs.Ask(userAsSpeech)
+        return this.avs.UserSays(userAsSpeech)
       })
       .then((botAsSpeech) => {
         debug(`Alexa answered succesful`)
@@ -69,15 +69,25 @@ class BotiumConnectorAlexaAvs {
   Stop () {
     debug('Stop called')
 
-    this.tts = null
-    this.stt = null
-    this.avs = null
+    this.tts.Stop()
+    this.stt.Stop()
+    this.avs.Stop()
 
     return Promise.resolve()
   }
 
   Clean () {
     debug('Clean called')
+
+
+    this.tts.Clean()
+    this.stt.Clean()
+    this.avs.Clean()
+
+    this.tts = null
+    this.stt = null
+    this.avs = null
+
     return Promise.resolve()
   }
 }
