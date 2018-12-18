@@ -45,6 +45,14 @@ class GoogleCloudTextToSpeech {
       })
     })
   }
+
+  Stop () {
+    return Promise.resolve()
+  }
+
+  Clean () {
+    return Promise.resolve()
+  }
 }
 
 module.exports = GoogleCloudTextToSpeech

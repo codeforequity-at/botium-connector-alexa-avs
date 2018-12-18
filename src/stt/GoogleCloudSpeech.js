@@ -47,6 +47,14 @@ class GoogleCloudSpeech {
         return transcription
       })
   }
+
+  Stop () {
+    return Promise.resolve()
+  }
+
+  Clean () {
+    return Promise.resolve()
+  }
 }
 
 module.exports = GoogleCloudSpeech
