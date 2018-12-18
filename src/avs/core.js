@@ -1,20 +1,10 @@
 const getMac = require('getmac')
 const request = require('request')
-var keypress = require('keypress')
-// make `process.stdin` begin emitting "keypress" events
-keypress(process.stdin)
+const readlineSync = require('readline-sync')
 
 const _keypress = (question) => {
   return new Promise((resolve, reject) => {
-    process.stdin.on('keypress', function (ch, key) {
-      process.stdin.pause()
-      resolve(key)
-    })
-
-    if (process.stdin.setRawMode) {
-      process.stdin.setRawMode(true)
-    }
-    process.stdin.resume()
+    resolve(readlineSync.question(question))
   })
 }
 
