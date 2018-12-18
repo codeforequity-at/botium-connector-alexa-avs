@@ -108,10 +108,10 @@ const _deviceTokenRequest = (deviceAuthorizationResponse) => {
         form
       }, function (error, response, body) {
         if (error) {
-          throw error
+          return reject(error)
         }
         if (response && response.statusCode !== 200) {
-          throw body
+          return reject(body)
         }
 
         body = JSON.parse(body)
@@ -146,10 +146,10 @@ module.exports.AccessTokenRefreshRequest = (clientId, refreshToken) => {
         form
       }, function (error, response, body) {
         if (error) {
-          throw error
+          return reject(error)
         }
         if (response && response.statusCode !== 200) {
-          throw body
+          return reject(body)
         }
 
         body = JSON.parse(body)

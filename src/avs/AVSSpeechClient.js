@@ -174,7 +174,7 @@ class AVS {
       })
       let outdata
       req.on('data', (chunk) => {
-        outdata = outdata ? Buffer.concat(outdata, chunk) : chunk
+        outdata = outdata ? Buffer.concat([outdata, chunk]) : chunk
       })
       req.on('end', () => {
         if (outdata.length) {
