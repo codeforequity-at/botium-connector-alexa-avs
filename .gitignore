@@ -60,3 +60,5 @@ typings/
 # next.js build output
 .next
 /.idea
+/cfg/config.json
+/cfg/googleConfig.json
