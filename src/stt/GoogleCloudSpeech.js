@@ -30,23 +30,22 @@ class GoogleCloudSpeech {
     this.defaultRequest = {
       config: {
         encoding: 'LINEAR16',
-        sampleRateHertz: 16000,
+        // if it is set, then google checks wether it is correct.
+        // sampleRateHertz: 16000,
         languageCode: this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE]
       }
     }
   }
 
   Recognize (audio) {
-    return new Promise((resolve) => {
-      this.client.recognize(Object.assign({audio: {content: audio}}, this.defaultRequest))
-        .then(data => {
-          const response = data[0]
-          const transcription = response.results
-            .map(result => result.alternatives[0].transcript)
-            .join('\n')
-          resolve(transcription)
-        })
-    })
+    return this.client.recognize(Object.assign({audio: {content: audio}}, this.defaultRequest))
+      .then(data => {
+        const response = data[0]
+        const transcription = response.results
+          .map(result => result.alternatives[0].transcript)
+          .join('\n')
+        return transcription
+      })
   }
 }
 

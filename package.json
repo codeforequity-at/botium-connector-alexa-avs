@@ -34,6 +34,9 @@
   "dependencies": {
     "@google-cloud/speech": "^2.1.1",
     "@google-cloud/text-to-speech": "^0.3.0",
+    "arraybuffer-to-buffer": "0.0.5",
+    "audio-decode": "^1.4.0",
+    "audiobuffer-to-wav": "^1.0.0",
     "debug": "^3.1.0",
     "escape-json-node": "^2.0.0",
     "getmac": "^1.4.6",
