@@ -25,5 +25,3 @@ connector.Validate()
   .then(() => connector.Stop())
   .then(() => connector.Clean())
   .catch((ex) => console.log(ex))
-
-setInterval(() => require('why-is-node-running')(), 2000)
