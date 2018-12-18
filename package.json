@@ -41,6 +41,7 @@
     "escape-json-node": "^2.0.0",
     "getmac": "^1.4.6",
     "http-message-parser": "0.0.32",
+    "jsonutil": "^0.2.0",
     "keypress": "^0.2.1",
     "lodash": "^4.17.10",
     "request": "^2.88.0",
