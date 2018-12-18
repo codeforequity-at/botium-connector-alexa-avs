@@ -49,12 +49,12 @@ class BotiumConnectorAlexaAvs {
     return Promise.resolve()
   }
 
-  UserSays (userAsText) {
+  UserSays ({messageText}) {
     debug('UserSays called')
-    debug(`User text ${userAsText} converting to speech...`)
-    return this.tts.Synthesize(userAsText)
+    debug(`User text ${messageText} converting to speech...`)
+    return this.tts.Synthesize(messageText)
       .then((userAsSpeech) => {
-        debug(`User text ${userAsText} converted to speech succesful`)
+        debug(`User text ${messageText} converted to speech succesful`)
         debug(`Alexa answering...`)
         return this.avs.UserSays(userAsSpeech)
       })
@@ -70,7 +70,7 @@ class BotiumConnectorAlexaAvs {
       })
       .then((botAsText) => {
         debug(`Answer converted to text ${botAsText} succesful`)
-        return this.queueBotSays(botAsText)
+        return this.queueBotSays({ sender: 'bot', messageText: botAsText, sourceData: null, sourceAction: null })
       })
   }
 

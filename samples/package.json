@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "botium-connector-dialogflow": "../",
+    "botium-connector-alexa-avs": "../",
     "botium-core": "*"
   }
 }
