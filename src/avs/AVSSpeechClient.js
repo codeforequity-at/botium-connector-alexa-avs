@@ -1,8 +1,9 @@
 'use strict'
 
-const http2 = require('http2')
+let http2
 const httpParser = require('http-message-parser')
 const debug = require('debug')('botium-connector-alexa-avs-avs')
+const currentVersion = require('node-version')
 
 const {AccessTokenRefreshRequest} = require('./core')
 
@@ -23,6 +24,15 @@ class AVS {
   }
 
   Validate () {
+    const major = parseInt(currentVersion.major, 10)
+    if (major < 9) {
+      if (major < 8) {
+        throw new Error(`Node v8 required, Node v10 preferred. Your version is ${currentVersion.original}`)
+      } else {
+        console.log(`Node v10 preferred. Your version is ${currentVersion.original}`)
+        debug(`Node v10 preferred. Your version is ${currentVersion.original}`)
+      }
+    }
     debug('Validate called')
     if (!this.caps[Capabilities.ALEXA_AVS_AVS_CLIENT_ID]) throw new Error('ALEXA_AVS_AVS_CLIENT_ID capability required')
     if (!this.caps[Capabilities.ALEXA_AVS_AVS_REFRESH_TOKEN]) throw new Error('ALEXA_AVS_AVS_REFRESH_TOKEN capability required')
@@ -31,6 +41,7 @@ class AVS {
 
   Build () {
     debug('Build called')
+    http2 = require('http2')
     // 1) acquiring access token from refresh token
     return AccessTokenRefreshRequest(this.caps[Capabilities.ALEXA_AVS_AVS_CLIENT_ID], this.caps[Capabilities.ALEXA_AVS_AVS_REFRESH_TOKEN])
       .then((result) => {
