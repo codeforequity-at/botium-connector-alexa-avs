@@ -1,4 +1,5 @@
 const util = require('util')
+const fs = require('fs')
 const httpParser = require('http-message-parser')
 const debug = require('debug')('botium-connector-alexa-avs-avs')
 const currentVersion = require('node-version')
@@ -7,8 +8,7 @@ if (major < 9) {
   if (major < 8) {
     throw new Error(`Node v8 required, Node v10 preferred. Your version is ${currentVersion.original}`)
   } else {
-    console.log(`Node v10 preferred. Your version is ${currentVersion.original}`)
-    debug(`Node v10 preferred. Your version is ${currentVersion.original}`)
+    [console.log, debug].forEach(fn => fn(`Node v10 preferred. Your version is ${currentVersion.original}`))
   }
 }
 const http2 = require('http2')
@@ -80,6 +80,10 @@ class AVS {
 
   UserSays (audio) {
     debug('UserSays called')
+    if (debug.enabled) {
+      fs.writeFileSync(`UserSays.mp3`, audio)
+    }
+
     return new Promise((resolve, reject) => {
       // data for synchronizing state.
       // we have stateless client,
@@ -186,28 +190,62 @@ class AVS {
         outdata = outdata ? Buffer.concat([outdata, chunk]) : chunk
       })
       req.on('end', () => {
-        if (outdata.length) {
+        if (outdata && outdata.length) {
           const parsedMessage = httpParser(outdata)
-          if (debug.enabled) {
-            for (var multipartIndex in parsedMessage.multipart) {
-              const part = parsedMessage.multipart[multipartIndex]
+          for (var multipartIndex in parsedMessage.multipart) {
+            const part = parsedMessage.multipart[multipartIndex]
+            if (debug.enabled) {
               debug(`UserSays response, multipart ${multipartIndex}: ${util.inspect(part)}`)
               if (part.headers['Content-Type'] && part.headers['Content-Type'].indexOf('application/json') === 0) {
                 debug(`UserSays response, multipart ${multipartIndex} Body: ${part.body.toString('utf8')}`)
               }
             }
           }
-          const audioBuffer = parsedMessage.multipart[1].body
-          if (debug.enabled) {
-            require('fs').writeFile('AlexaSaid.mp3', audioBuffer, () => {
-              resolve(audioBuffer)
+
+          const contentPayload = parsedMessage.multipart.reduce((acc, part) => {
+            if (part.headers && part.headers['Content-ID']) {
+              debug(`Found Content Payload with CID ${part.headers['Content-ID']}`)
+              acc[part.headers['Content-ID']] = part.body
+            }
+            return acc
+          }, {})
+
+          const directivePayload = parsedMessage.multipart.reduce((acc, part) => {
+            if (part.headers && part.headers['Content-Type'].indexOf('application/json') === 0) {
+              debug(`Found JSON Payload of type ${part.headers['Content-Type']}`)
+              const partJson = JSON.parse(part.body.toString('utf8'))
+              if (partJson.directive) {
+                acc.push(partJson.directive)
+              }
+            }
+            return acc
+          }, [])
+
+          const audioBuffers = []
+          directivePayload.forEach(directive => {
+            if (directive.header && directive.header.namespace === 'SpeechSynthesizer' && directive.header.name === 'Speak') {
+              debug(`Found SpeechSynthesizer/Speak directive ${util.inspect(directive)}`)
+              if (directive.payload.url.indexOf('cid:') === 0) {
+                const lookupContentId = `<${directive.payload.url.substr(4)}>`
+                if (contentPayload[lookupContentId]) {
+                  audioBuffers.push({ format: directive.payload.format, payload: contentPayload[lookupContentId] })
+                } else {
+                  throw new Error(`Directive payload ${lookupContentId} not found in response.`)
+                }
+              } else {
+                throw new Error(`Directive payload url ${directive.payload.url} not supported.`)
+              }
+            }
+          })
+          if (audioBuffers && audioBuffers.length > 0 && debug.enabled) {
+            audioBuffers.forEach((ab, index) => {
+              fs.writeFileSync(`AlexaSaid${index}.mp3`, ab.payload)
             })
-          } else {
-            resolve(audioBuffer)
           }
+          resolve(audioBuffers)
         } else {
           debug(`UserSays response is empty`)
-          resolve(Buffer.alloc(0))
+          resolve()
         }
       })
 

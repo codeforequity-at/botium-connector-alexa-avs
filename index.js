@@ -51,27 +51,50 @@ class BotiumConnectorAlexaAvs {
 
   UserSays ({messageText}) {
     debug('UserSays called')
-    debug(`User text "${messageText}" converting to speech...`)
-    return this.tts.Synthesize(messageText)
-      .then((userAsSpeech) => {
-        debug(`User text "${messageText}" converted to speech succesful`)
-        debug(`Alexa answering...`)
-        return this.avs.UserSays(userAsSpeech)
-      })
-      .then((botAsSpeechMp3) => {
-        debug(`Alexa answered succesfull`)
-        debug(`Answer converting to wav...`)
-        return _mp3ToWav(botAsSpeechMp3)
-      })
-      .then((botAsSpeechWav) => {
-        debug(`Alexa converted to wav`)
-        debug(`Answer converting to text...`)
-        return this.stt.Recognize(botAsSpeechWav)
-      })
-      .then((botAsText) => {
-        debug(`Answer converted to text "${botAsText}" succesfull`)
-        return this.queueBotSays({ sender: 'bot', messageText: botAsText, sourceData: null, sourceAction: null })
-      })
+    return new Promise((resolve, reject) => {
+      debug(`User text "${messageText}" converting to speech...`)
+      this.tts.Synthesize(messageText)
+        .then((userAsSpeech) => {
+          debug(`User text "${messageText}" conversion to speech succeeded`)
+          debug(`Alexa answering...`)
+          return this.avs.UserSays(userAsSpeech)
+        })
+        .then((audioBuffers) => {
+          debug(`Alexa answered succesfull`)
+
+          const responseTexts = []
+          if (audioBuffers && audioBuffers.length > 0) {
+            let processingPromise = Promise.resolve()
+            audioBuffers.forEach((audioBuffer) => {
+              processingPromise = processingPromise.then(() => {
+                debug(`Answer converting to wav, format "${audioBuffer.format}", size ${audioBuffer.payload.length}...`)
+                return _mp3ToWav(audioBuffer.payload)
+                  .then((botAsSpeechWav) => {
+                    debug(`Alexa converted to wav`)
+                    debug(`Answer converting to text...`)
+                    return this.stt.Recognize(botAsSpeechWav)
+                  })
+                  .then((botAsText) => {
+                    debug(`Answer converted to text "${botAsText}" succeeded`)
+                    responseTexts.push(botAsText)
+                  })
+                  .catch(err => {
+                    debug(`Answer conversion failed, format "${audioBuffer.format}", size ${audioBuffer.payload.length}: ${err}`)
+                  })
+              })
+            })
+            processingPromise.then(() => {
+              debug(`Answer handling ready, processed ${audioBuffers.length} audio responses.`)
+              resolve()
+
+              responseTexts.forEach(messageText => {
+                this.queueBotSays({ sender: 'bot', messageText })
+              })
+            })
+          }
+        })
+        .catch(reject)
+    })
   }
 
   Stop () {

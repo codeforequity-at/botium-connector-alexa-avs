@@ -4,14 +4,22 @@ const driver = new BotDriver()
 
 driver.BuildFluent()
   .Start()
-  .UserSaysText('Alexa how is the weather in vienna?')
+  .UserSaysText('ich möchte waschmittel kaufen ?')
   .WaitBotSaysText((msg) => {
     console.log(msg)
   })
-  .UserSaysText('Alexa alarm')
-  .WaitBotSaysText(console.log)
-  .UserSaysText('Alexa wake up')
-  .WaitBotSaysText(console.log)
+  .WaitBotSaysText((msg) => {
+    console.log(msg)
+  })
+  .WaitBotSaysText((msg) => {
+    console.log(msg)
+  })
+  .UserSaysText('abbrechen bitte')
+  .WaitBotSaysText((msg) => {
+    console.log(msg)
+  })
+// .UserSaysText('Danke')
+// .WaitBotSaysText(console.log)
   .Stop()
   .Clean()
   .Exec()
