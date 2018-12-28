@@ -62,3 +62,5 @@ typings/
 /.idea
 /cfg/config.json
 /cfg/googleConfig.json
+
+*.mp3
