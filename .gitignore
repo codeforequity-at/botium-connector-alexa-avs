@@ -59,8 +59,14 @@ typings/
 
 # next.js build output
 .next
+
+# IDE
 /.idea
+
+# configs
 /cfg/config.json
 /cfg/googleConfig.json
+/samples/botium.json
 
+# alexa answer is stored as mp3 in debug mode
 *.mp3
