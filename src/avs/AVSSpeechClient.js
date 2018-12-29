@@ -2,6 +2,7 @@ const util = require('util')
 const fs = require('fs')
 const httpParser = require('http-message-parser')
 const debug = require('debug')('botium-connector-alexa-avs-avs')
+const uuidv1 = require('uuid/v1')
 const currentVersion = require('node-version')
 const major = parseInt(currentVersion.major, 10)
 if (major < 9) {
@@ -18,6 +19,59 @@ const {AccessTokenRefreshRequest} = require('./core')
 const BASE_URL = 'https://avs-alexa-eu.amazon.com'
 const ALEXA_AVS_AVS_CLIENT_ID = 'ALEXA_AVS_AVS_CLIENT_ID'
 const ALEXA_AVS_AVS_REFRESH_TOKEN = 'ALEXA_AVS_AVS_REFRESH_TOKEN'
+const CONTEXT = [
+  {
+    'header': {
+      'namespace': 'SpeechRecognizer',
+      'name': 'RecognizerState'
+    },
+    'payload': {
+
+    }
+  },
+  {
+    'header': {
+      'namespace': 'Speaker',
+      'name': 'VolumeState'
+    },
+    'payload': {
+      'volume': 10,
+      'muted': false
+    }
+  },
+  {
+    'header': {
+      'namespace': 'Alerts',
+      'name': 'AlertsState'
+    },
+    'payload': {
+      'allAlerts': [],
+      'activeAlerts': []
+    }
+  },
+  {
+    'header': {
+      'namespace': 'SpeechSynthesizer',
+      'name': 'SpeechState'
+    },
+    'payload': {
+      'token': '',
+      'offsetInMilliseconds': 0,
+      'playerActivity': 'FINISHED'
+    }
+  },
+  {
+    'header': {
+      'namespace': 'AudioPlayer',
+      'name': 'PlaybackState'
+    },
+    'payload': {
+      'token': '',
+      'offsetInMilliseconds': 0,
+      'playerActivity': 'IDLE'
+    }
+  }
+]
 
 const Capabilities = {
   ALEXA_AVS_AVS_CLIENT_ID,
@@ -74,7 +128,7 @@ class AVS {
         req.on('data', (chunk) => debug(`Downchannel data received ${chunk}`))
         req.on('end', () => debug('Downchannel closed'))
         req.end()
-        debug(`Downchannel creating ${util.inspect(options)}`)
+        debug(`Downchannel created ${util.inspect(options)}`)
       })
   }
 
@@ -90,65 +144,13 @@ class AVS {
       // so this can be always the same
       var metadata = JSON.stringify(
         {
-          'context': [
-            {
-              'header': {
-                'namespace': 'SpeechRecognizer',
-                'name': 'RecognizerState'
-              },
-              'payload': {
-
-              }
-            },
-            {
-              'header': {
-                'namespace': 'Speaker',
-                'name': 'VolumeState'
-              },
-              'payload': {
-                'volume': 10,
-                'muted': false
-              }
-            },
-            {
-              'header': {
-                'namespace': 'Alerts',
-                'name': 'AlertsState'
-              },
-              'payload': {
-                'allAlerts': [],
-                'activeAlerts': []
-              }
-            },
-            {
-              'header': {
-                'namespace': 'SpeechSynthesizer',
-                'name': 'SpeechState'
-              },
-              'payload': {
-                'token': '',
-                'offsetInMilliseconds': 0,
-                'playerActivity': 'FINISHED'
-              }
-            },
-            {
-              'header': {
-                'namespace': 'AudioPlayer',
-                'name': 'PlaybackState'
-              },
-              'payload': {
-                'token': '',
-                'offsetInMilliseconds': 0,
-                'playerActivity': 'IDLE'
-              }
-            }
-          ],
+          'context': CONTEXT,
           'event': {
             'header': {
               'namespace': 'SpeechRecognizer',
               'name': 'Recognize',
-              'messageId': '1eff3c5e-02e3-4dd3-9ca0-7c38937f005f',
-              'dialogRequestId': 'a905c2bb-1bbd-45cf-9f85-6563d2546492'
+              'messageId': uuidv1(),
+              'dialogRequestId': uuidv1()
             },
             'payload': {
               'profile': 'FAR_FIELD',

@@ -1,4 +1,4 @@
-const getMac = require('getmac')
+const uuidv1 = require('uuid/v1')
 const request = require('request')
 const readlineSync = require('readline-sync')
 
@@ -22,32 +22,27 @@ const _keypress = (question) => {
  */
 const _deviceAuthorizationRequest = (clientId, productID) => {
   return new Promise((resolve, reject) => {
-    getMac.getMac(function (err, macAddress) {
-      if (err) {
-        reject(err)
-        return
-      }
+    const deviceSerialNumber = uuidv1()
+    console.log('Device serial number: ' + deviceSerialNumber)
 
-      console.log('device_serial_number(MAC address): ' + JSON.stringify(macAddress))
-
-      const form = {
-        response_type: 'device_code',
-        client_id: clientId,
-        scope: 'alexa:all',
-        scope_data:
+    const form = {
+      response_type: 'device_code',
+      client_id: clientId,
+      scope: 'alexa:all',
+      scope_data:
         {
           'alexa:all': {
             productID: productID,
             productInstanceAttributes:
               {
-                deviceSerialNumber: macAddress
+                deviceSerialNumber: deviceSerialNumber
               }
           }
         }
-      }
+    }
 
-      form.scope_data = JSON.stringify(form.scope_data)
-      const requestObject =
+    form.scope_data = JSON.stringify(form.scope_data)
+    const requestObject =
         {
           method: 'POST',
           headers: {
@@ -56,27 +51,26 @@ const _deviceAuthorizationRequest = (clientId, productID) => {
           uri: `https://api.amazon.com/auth/O2/create/codepair`,
           form
         }
-      request(requestObject, function (error, response, body) {
-        if (error) {
-          reject(error)
-          return
-        }
-        if (response && response.statusCode !== 200) {
-          reject(body)
-          return
-        }
-        body = JSON.parse(body)
-        return resolve(
-          Object.assign(
-            body,
-            {
-              client_id: clientId,
-              product_id: productID,
-              device_serial_number: macAddress
-            }
-          )
+    request(requestObject, function (error, response, body) {
+      if (error) {
+        reject(error)
+        return
+      }
+      if (response && response.statusCode !== 200) {
+        reject(body)
+        return
+      }
+      body = JSON.parse(body)
+      return resolve(
+        Object.assign(
+          body,
+          {
+            client_id: clientId,
+            product_id: productID,
+            device_serial_number: deviceSerialNumber
+          }
         )
-      })
+      )
     })
   })
 }
