@@ -5,6 +5,7 @@
   "main": "dist/botium-connector-alexa-avs-cjs.js",
   "module": "dist/botium-connector-alexa-avs-es.js",
   "scripts": {
+    "create-capabilities": "node src/tools/CreateCapabilities.js",
     "build": "npm run eslint && rollup -c",
     "eslint": "eslint index.js"
   },

@@ -1,10 +1,11 @@
 const yargs = require('yargs')
 const jsonutil = require('jsonutil')
+const fs = require('fs')
 
 const amazonCore = require('../avs/core')
 const DEFAULT_LANGUAGE_CODE = 'en_US'
-const DEFAULT_AMAZON_CONFIG = '../../cfg/config.json'
-const DEFAULT_GOOGLE_CONFIG = '../../cfg/googleConfig.json'
+const DEFAULT_AMAZON_CONFIG = 'cfg/config.json'
+const DEFAULT_GOOGLE_CONFIG = 'cfg/googleConfig.json'
 
 const _parseArgs = () => {
   return Promise.resolve(
@@ -60,7 +61,9 @@ _parseArgs()
             ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: googleConfigJson.client_email,
             ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: args.l
           }
-        console.log(`Botium Capabilities:\n ${JSON.stringify(caps, null, 2)}`)
+        const asString = JSON.stringify(caps, null, 2)
+        console.log(`Botium Capabilities:\n ${asString}`)
+        fs.writeFileSync(`botium.json`, asString)
       })
   })
   .catch((err) => console.log(err))
