@@ -18,6 +18,7 @@ const {AccessTokenRefreshRequest} = require('./core')
 
 const BASE_URL = 'https://avs-alexa-eu.amazon.com'
 const ALEXA_AVS_AVS_CLIENT_ID = 'ALEXA_AVS_AVS_CLIENT_ID'
+const ALEXA_AVS_AVS_CLIENT_SECRET = 'ALEXA_AVS_AVS_CLIENT_SECRET'
 const ALEXA_AVS_AVS_REFRESH_TOKEN = 'ALEXA_AVS_AVS_REFRESH_TOKEN'
 const CONTEXT = [
   {
@@ -75,6 +76,7 @@ const CONTEXT = [
 
 const Capabilities = {
   ALEXA_AVS_AVS_CLIENT_ID,
+  ALEXA_AVS_AVS_CLIENT_SECRET,
   ALEXA_AVS_AVS_REFRESH_TOKEN,
   ALEXA_AVS_AVS_LANGUAGE_CODE: 'ALEXA_AVS_AVS_LANGUAGE_CODE'
 }
@@ -88,6 +90,7 @@ class AVS {
   Validate () {
     debug('Validate called')
     if (!this.caps[Capabilities.ALEXA_AVS_AVS_CLIENT_ID]) throw new Error('ALEXA_AVS_AVS_CLIENT_ID capability required')
+    if (!this.caps[Capabilities.ALEXA_AVS_AVS_CLIENT_SECRET]) throw new Error('ALEXA_AVS_AVS_CLIENT_SECRET capability required')
     if (!this.caps[Capabilities.ALEXA_AVS_AVS_REFRESH_TOKEN]) throw new Error('ALEXA_AVS_AVS_REFRESH_TOKEN capability required')
     if (!this.caps[Capabilities.ALEXA_AVS_AVS_LANGUAGE_CODE]) throw new Error('ALEXA_AVS_AVS_LANGUAGE_CODE capability required')
   }
@@ -95,7 +98,7 @@ class AVS {
   Build () {
     debug('Build called')
     // 1) acquiring access token from refresh token
-    return AccessTokenRefreshRequest(this.caps[Capabilities.ALEXA_AVS_AVS_CLIENT_ID], this.caps[Capabilities.ALEXA_AVS_AVS_REFRESH_TOKEN])
+    return AccessTokenRefreshRequest(this.caps[Capabilities.ALEXA_AVS_AVS_CLIENT_ID], this.caps[Capabilities.ALEXA_AVS_AVS_CLIENT_SECRET], this.caps[Capabilities.ALEXA_AVS_AVS_REFRESH_TOKEN])
       .then((result) => {
         debug('Access token acquired')
         this.accessToken = result.access_token

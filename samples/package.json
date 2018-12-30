@@ -4,6 +4,7 @@
   "description": "",
   "main": "botiumFluent.js",
   "scripts": {
+    "init-alexa-avs": "botium-connector-alexa-avs-init",
     "start": "node botiumFluent.js"
   },
   "keywords": [],

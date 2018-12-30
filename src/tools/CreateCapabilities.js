@@ -1,11 +1,12 @@
+#!/usr/bin/env node
 const yargs = require('yargs')
 const jsonutil = require('jsonutil')
 const fs = require('fs')
 
 const amazonCore = require('../avs/core')
 const DEFAULT_LANGUAGE_CODE = 'en_US'
-const DEFAULT_AMAZON_CONFIG = 'cfg/config.json'
-const DEFAULT_GOOGLE_CONFIG = 'cfg/googleConfig.json'
+const DEFAULT_AMAZON_CONFIG = 'amazonConfig.json'
+const DEFAULT_GOOGLE_CONFIG = 'googleConfig.json'
 
 const _parseArgs = () => {
   return Promise.resolve(
@@ -51,7 +52,10 @@ _parseArgs()
       .then(() => {
         const caps =
           {
+            PROJECTNAME: 'Botium Project Alexa AVS',
+            CONTAINERMODE: 'alexa-avs',
             ALEXA_AVS_AVS_CLIENT_ID: amazonConfigJson.deviceInfo.clientId,
+            ALEXA_AVS_AVS_CLIENT_SECRET: amazonConfigJson.deviceInfo.clientSecret,
             ALEXA_AVS_AVS_REFRESH_TOKEN: deviceTokenResponse.refresh_token,
             ALEXA_AVS_AVS_LANGUAGE_CODE: args.l,
             ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY: googleConfigJson.private_key,
@@ -62,8 +66,19 @@ _parseArgs()
             ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: args.l
           }
         const asString = JSON.stringify(caps, null, 2)
-        console.log(`Botium Capabilities:\n ${asString}`)
-        fs.writeFileSync(`botium.json`, asString)
+        console.log(`Botium Capabilities (to use for copy & paste):\n ${asString}`)
+
+        if (fs.existsSync(`botium.json`)) {
+          console.log(`File botium.json already existing, I won't overwrite it. Please remove it first before running again.`)
+        } else {
+          const botiumJsonAsString = JSON.stringify({
+            botium: {
+              Capabilities: caps
+
+            }
+          }, null, 2)
+          fs.writeFileSync(`botium.json`, botiumJsonAsString)
+        }
       })
   })
   .catch((err) => console.log(err))

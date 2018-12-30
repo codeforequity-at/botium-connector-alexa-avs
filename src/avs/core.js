@@ -1,3 +1,4 @@
+const util = require('util')
 const uuidv1 = require('uuid/v1')
 const request = require('request')
 const readlineSync = require('readline-sync')
@@ -53,12 +54,10 @@ const _deviceAuthorizationRequest = (clientId, productID) => {
         }
     request(requestObject, function (error, response, body) {
       if (error) {
-        reject(error)
-        return
+        return reject(new Error(`_deviceAuthorizationRequest failed: ${util.inspect(error)}`))
       }
       if (response && response.statusCode !== 200) {
-        reject(body)
-        return
+        return reject(new Error(`_deviceAuthorizationRequest failed with status code ${response.statusCode}: ${util.inspect(body)}`))
       }
       body = JSON.parse(body)
       return resolve(
@@ -102,10 +101,10 @@ const _deviceTokenRequest = (deviceAuthorizationResponse) => {
         form
       }, function (error, response, body) {
         if (error) {
-          return reject(error)
+          return reject(new Error(`_deviceTokenRequest failed: ${util.inspect(error)}`))
         }
         if (response && response.statusCode !== 200) {
-          return reject(body)
+          return reject(new Error(`_deviceTokenRequest failed with status code ${response.statusCode}: ${util.inspect(body)}`))
         }
 
         body = JSON.parse(body)
@@ -122,12 +121,13 @@ const _deviceTokenRequest = (deviceAuthorizationResponse) => {
   "expires_in": {{INTEGER}}
 }
 */
-module.exports.AccessTokenRefreshRequest = (clientId, refreshToken) => {
+const AccessTokenRefreshRequest = (clientId, clientSecret, refreshToken) => {
   return new Promise((resolve, reject) => {
     const form = {
       grant_type: 'refresh_token',
       refresh_token: refreshToken,
-      client_id: clientId
+      client_id: clientId,
+      client_secret: clientSecret
     }
 
     request(
@@ -140,10 +140,10 @@ module.exports.AccessTokenRefreshRequest = (clientId, refreshToken) => {
         form
       }, function (error, response, body) {
         if (error) {
-          return reject(error)
+          return reject(new Error(`AccessTokenRefreshRequest failed: ${util.inspect(error)}`))
         }
         if (response && response.statusCode !== 200) {
-          return reject(body)
+          return reject(new Error(`AccessTokenRefreshRequest failed with status code ${response.statusCode}: ${util.inspect(body)}`))
         }
 
         body = JSON.parse(body)
@@ -167,17 +167,25 @@ module.exports.AccessTokenRefreshRequest = (clientId, refreshToken) => {
           "device_serial_number": "{{STRING}}"
          }
 */
-module.exports.RefreshTokenAcquireRequest = async (clientId, productID) => {
+const RefreshTokenAcquireRequest = (clientId, productID) => {
   console.log('Authorizing device...')
-  const deviceAuthorizationResponse = await _deviceAuthorizationRequest(clientId, productID)
-  console.log(`Please login on ${deviceAuthorizationResponse.verification_uri} and enter ${deviceAuthorizationResponse.user_code}`) // Print the HTML for the Google homepage.
-  console.log('Press enter after done')
-  await _keypress(' ')
 
-  console.log('Acquiring token...')
-  const deviceTokenResponse = await _deviceTokenRequest(deviceAuthorizationResponse)
-  console.log('Token acquired: ' + JSON.stringify(deviceTokenResponse))
-  return Object.assign(deviceAuthorizationResponse, deviceTokenResponse)
+  let deviceAuthorizationResponse = null
+  return _deviceAuthorizationRequest(clientId, productID)
+    .then((response) => {
+      deviceAuthorizationResponse = response
+      console.log(`Please login on ${deviceAuthorizationResponse.verification_uri} and enter ${deviceAuthorizationResponse.user_code}`) // Print the HTML for the Google homepage.
+      console.log('Press enter after done')
+      return _keypress(' ')
+    })
+    .then(() => {
+      console.log('Acquiring token...')
+      return _deviceTokenRequest(deviceAuthorizationResponse)
+    })
+    .then((deviceTokenResponse) => {
+      console.log('Token acquired: ' + JSON.stringify(deviceTokenResponse))
+      return Object.assign(deviceAuthorizationResponse, deviceTokenResponse)
+    })
 }
 
 const SendCapabilities = (accessToken, retryDelay = 0.5) => {
@@ -227,4 +235,8 @@ const SendCapabilities = (accessToken, retryDelay = 0.5) => {
     )
   })
 }
-module.exports.SendCapabilities = SendCapabilities
+module.exports = {
+  AccessTokenRefreshRequest,
+  RefreshTokenAcquireRequest,
+  SendCapabilities
+}
