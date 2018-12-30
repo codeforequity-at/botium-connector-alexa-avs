@@ -104,6 +104,8 @@ _You may remove the amazonConfig.json and googleConfig.json now_
 
 ## Supported Capabilities
 
+Set the capability __CONTAINERMODE__ to __alexa-avs__ to activate this connector.
+
 ### ALEXA_AVS_AVS_CLIENT_ID
 See json downloaded from AVS
 
