@@ -1,5 +1,9 @@
 # Botium Connector for Amazon Alexa with AVS
 
+[![NPM](https://nodei.co/npm/botium-connector-alexa-avs.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/botium-connector-alexa-avs/)
+
+[ ![Codeship Status for codeforequity-at/botium-connector-alexa-avs](https://app.codeship.com/projects/f379ece0-ee76-0136-6e85-5afc45d94643/status?branch=master)](https://app.codeship.com/projects/320125)
+[![npm version](https://badge.fury.io/js/botium-connector-alexa-avs.svg)](https://badge.fury.io/js/botium-connector-alexa-avs)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)]()
 
 This is a [Botium](https://github.com/codeforequity-at/botium-core) connector for testing your Amazon Alexa Skills.
