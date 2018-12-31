@@ -22,6 +22,8 @@ It can be used as any other Botium connector with all Botium Stack components:
 * [Botium Bindings](https://github.com/codeforequity-at/botium-bindings/)
 * [Botium Box](https://www.botium.at)
 
+The Alexa skill to test doesn't have to be published - it can be tested while still in "development mode", making this connector the perfect choice for __Continuous Testing in CI Pipelines__.
+
 ## Requirements
 
 ### Node.js v10
