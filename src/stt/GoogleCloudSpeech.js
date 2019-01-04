@@ -1,6 +1,8 @@
 // Imports the Google Cloud client library
 const speech = require('@google-cloud/speech')
 
+const mp3ToWav = require('../utils/mp3ToWav')
+
 const Capabilities = {
   ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY: 'ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY',
   ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: 'ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL',
@@ -37,8 +39,11 @@ class GoogleCloudSpeech {
     }
   }
 
-  Recognize (audio) {
-    return this.client.recognize(Object.assign({audio: {content: audio}}, this.defaultRequest))
+  Recognize (audioAsMP3) {
+    return mp3ToWav(audioAsMP3)
+      .then((audioAsWav) => {
+        return this.client.recognize(Object.assign({audio: {content: audioAsWav}}, this.defaultRequest))
+      })
       .then(data => {
         const response = data[0]
         const transcription = response.results
@@ -53,6 +58,8 @@ class GoogleCloudSpeech {
   }
 
   Clean () {
+    this.defaultRequest = null
+    this.client = null
     return Promise.resolve()
   }
 }

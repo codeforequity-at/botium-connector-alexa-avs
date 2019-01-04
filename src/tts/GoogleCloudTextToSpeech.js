@@ -51,6 +51,7 @@ class GoogleCloudTextToSpeech {
   }
 
   Clean () {
+    this.client = null
     return Promise.resolve()
   }
 }
