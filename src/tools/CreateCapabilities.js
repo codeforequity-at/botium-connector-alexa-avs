@@ -20,7 +20,7 @@ const _extractArgs = () => {
     defaultInput: DEFAULT_LANGUAGE_CODE
   })
 
-  result.tts = readlineSync.question('Text to speech provider (a) Amazon Polly or (2) Google Cloud Text to Speech? (a) ', {limit: /(a|g|)/})
+  result.tts = readlineSync.question('Text to speech provider (a) Amazon Polly or (g) Google Cloud Text to Speech? (a) ', {limit: /(a|g|)/})
   result.tts = result.tts || 'a'
 
   result.stt = readlineSync.question('Speech to text provider (a) Amazon Transcribe or (g) Google Cloud Speech? (g) ', {limit: /(a|g|)/})
@@ -70,11 +70,13 @@ const _createCapabilities = (args, deviceTokenResponse) => {
 
   const capsTTS = (args.tts === 'g')
     ? {
+      ALEXA_AVS_TTS: 'GOOGLE_CLOUD_TEXT_TO_SPEECH',
       ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY: args.googleConfig.private_key,
       ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL: args.googleConfig.client_email,
       ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE: args.googleConfig.languageCode
     }
     : {
+      ALEXA_AVS_TTS: 'AMAZON_POLLY',
       ALEXA_AVS_TTS_AMAZON_POLLY_REGION: args.amazonConfig.region,
       ALEXA_AVS_TTS_AMAZON_POLLY_ACCESS_KEY_ID: args.amazonConfig.accessKeyId,
       ALEXA_AVS_TTS_AMAZON_POLLY_SECRET_ACCESS_KEY: args.amazonConfig.secretAccessKey,
@@ -83,11 +85,13 @@ const _createCapabilities = (args, deviceTokenResponse) => {
 
   const capsSTT = (args.stt === 'g')
     ? {
+      ALEXA_AVS_STT: 'GOOGLE_CLOUD_SPEECH',
       ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY: args.googleConfig.private_key,
       ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: args.googleConfig.client_email,
       ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: args.googleConfig.languageCode
     }
     : {
+      ALEXA_AVS_STT: 'AMAZON_TRANSCRIBE',
       ALEXA_AVS_STT_AMAZON_TRANSCRIBE_REGION: args.amazonConfig.region,
       ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID: args.amazonConfig.accessKeyId,
       ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY: args.amazonConfig.secretAccessKey,

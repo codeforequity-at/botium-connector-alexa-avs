@@ -5,11 +5,11 @@ const util = require('util')
 const AmazonS3URI = require('amazon-s3-uri')
 
 const Capabilities = {
-  ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_REGION: 'ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_REGION',
-  ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_ACCESS_KEY_ID: 'ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_ACCESS_KEY_ID',
-  ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY: 'ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY',
-  ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_LANGUAGE_CODE: 'ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_LANGUAGE_CODE',
-  ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_BUCKET_NAME: 'ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_BUCKET_NAME'
+  ALEXA_AVS_STT_AMAZON_TRANSCRIBE_REGION: 'ALEXA_AVS_STT_AMAZON_TRANSCRIBE_REGION',
+  ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID: 'ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID',
+  ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY: 'ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY',
+  ALEXA_AVS_STT_AMAZON_TRANSCRIBE_LANGUAGE_CODE: 'ALEXA_AVS_STT_AMAZON_TRANSCRIBE_LANGUAGE_CODE',
+  ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME: 'ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME'
 }
 
 class AmazonTranscribe {
@@ -18,32 +18,32 @@ class AmazonTranscribe {
   }
 
   Validate () {
-    if (!this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_REGION]) throw new Error('ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_ACCESS_KEY_ID capability required')
-    if (!this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_ACCESS_KEY_ID]) throw new Error('ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_ACCESS_KEY_ID capability required')
-    if (!this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY]) throw new Error('ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY capability required')
-    if (!this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_LANGUAGE_CODE]) throw new Error('ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_LANGUAGE_CODE capability required')
-    if (!this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_BUCKET_NAME]) throw new Error('ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_BUCKET_NAME capability required')
+    if (!this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_REGION]) throw new Error('ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID capability required')
+    if (!this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID]) throw new Error('ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID capability required')
+    if (!this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY]) throw new Error('ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY capability required')
+    if (!this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_LANGUAGE_CODE]) throw new Error('ALEXA_AVS_STT_AMAZON_TRANSCRIBE_LANGUAGE_CODE capability required')
+    if (!this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME]) throw new Error('ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME capability required')
   }
 
   Build () {
     // Creates a client
     this.client = new AWS.TranscribeService({
       apiVersion: '2017-10-26',
-      region: this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_REGION],
-      accessKeyId: this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_ACCESS_KEY_ID],
-      secretAccessKey: this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY]
+      region: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_REGION],
+      accessKeyId: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID],
+      secretAccessKey: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY]
     })
 
     this.defaultRequest = {
       MediaFormat: 'mp3',
-      LanguageCode: this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_LANGUAGE_CODE]
+      LanguageCode: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_LANGUAGE_CODE]
     }
 
     this.s3 = new AWS.S3({
       apiVersion: '2006-03-01',
-      region: this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_REGION],
-      accessKeyId: this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_ACCESS_KEY_ID],
-      secretAccessKey: this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY]
+      region: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_REGION],
+      accessKeyId: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID],
+      secretAccessKey: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY]
     })
   }
 
@@ -54,7 +54,7 @@ class AmazonTranscribe {
       const processId = randomize('a0', 10)
       const fileKey = 'to-transcribe-source-' + processId
       const params = {
-        Bucket: this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_BUCKET_NAME],
+        Bucket: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME],
         Key: fileKey,
         Body: audio
       }
@@ -74,7 +74,7 @@ class AmazonTranscribe {
           {
             Media: {MediaFileUri: s3Response.Location},
             TranscriptionJobName: transcriptionJobName,
-            OutputBucketName: this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_BUCKET_NAME]
+            OutputBucketName: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME]
           },
           this.defaultRequest)
 
@@ -92,7 +92,7 @@ class AmazonTranscribe {
               client: this.client,
               s3: this.s3,
               fileKey: fileKey,
-              bucket: this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_TRANSCRIBE_BUCKET_NAME],
+              bucket: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME],
               transcriptionJobName: transcriptionJobName,
               mediaFileUri: s3Response.Location
             }
@@ -107,7 +107,10 @@ class AmazonTranscribe {
                   .then((transcription) => {
                     // 4. clean up temporary files, and return the text
                     return _cleanup(options)
-                      .then(() => { return resolve(transcription) })
+                      .then(() => {
+                        debug(`Recognize finished: ${transcription}`)
+                        return resolve(transcription)
+                      })
                   })
               })
           }

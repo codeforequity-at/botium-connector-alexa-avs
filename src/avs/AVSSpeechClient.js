@@ -139,7 +139,7 @@ class AVS {
   UserSays (audio) {
     debug('UserSays called')
     if (debug.enabled) {
-      fs.writeFileSync(`UserSays.mp3`, audio)
+      fs.writeFileSync(`UserSays.wav`, audio)
     }
 
     return new Promise((resolve, reject) => {

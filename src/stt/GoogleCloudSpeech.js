@@ -1,5 +1,6 @@
 // Imports the Google Cloud client library
 const speech = require('@google-cloud/speech')
+const debug = require('debug')('botium-connector-alexa-avs-stt-google-cloud-speech')
 
 const mp3ToWav = require('../utils/mp3ToWav')
 const underlineLanguageCode = require('../utils/underlineLanguageCode')
@@ -41,6 +42,7 @@ class GoogleCloudSpeech {
   }
 
   Recognize (audioAsMP3) {
+    debug('Recognize called')
     return mp3ToWav(audioAsMP3)
       .then((audioAsWav) => {
         return this.client.recognize(Object.assign({audio: {content: audioAsWav}}, this.defaultRequest))

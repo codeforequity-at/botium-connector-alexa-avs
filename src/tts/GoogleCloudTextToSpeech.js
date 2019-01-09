@@ -1,4 +1,6 @@
 const textToSpeech = require('@google-cloud/text-to-speech')
+const debug = require('debug')('botium-connector-alexa-avs-tts-google-cloud-text-to-speech')
+
 const underlineLanguageCode = require('../utils/underlineLanguageCode')
 
 const Capabilities = {
@@ -36,6 +38,7 @@ class GoogleCloudTextToSpeech {
   }
 
   Synthesize (text) {
+    debug('Synthesize called')
     return new Promise((resolve, reject) => {
       this.client.synthesizeSpeech(Object.assign({input: {text}}, this.defaultRequest), (err, response) => {
         if (err) {

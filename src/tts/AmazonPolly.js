@@ -1,4 +1,6 @@
 const AWS = require('aws-sdk')
+const mp3ToWav = require('../utils/mp3ToWav')
+const debug = require('debug')('botium-connector-alexa-avs-tts-amazon-polly')
 
 const Capabilities = {
   ALEXA_AVS_TTS_AMAZON_POLLY_REGION: 'ALEXA_AVS_TTS_AMAZON_POLLY_REGION',
@@ -36,15 +38,20 @@ class AmazonPolly {
   }
 
   Synthesize (text) {
+    debug('Synthesize called')
     return new Promise((resolve, reject) => {
       this.client.synthesizeSpeech(Object.assign({Text: text}, this.defaultRequest), (err, response) => {
         if (err) {
           return reject(err)
         }
 
+        debug(`Synthesize finised`)
         return resolve(response.AudioStream)
       })
     })
+      .then((response) => {
+        return mp3ToWav(response)
+      })
   }
 
   Stop () {
