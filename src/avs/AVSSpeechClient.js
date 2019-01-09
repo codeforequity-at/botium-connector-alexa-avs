@@ -92,6 +92,7 @@ class AVS {
     if (!this.caps[Capabilities.ALEXA_AVS_AVS_CLIENT_ID]) throw new Error('ALEXA_AVS_AVS_CLIENT_ID capability required')
     if (!this.caps[Capabilities.ALEXA_AVS_AVS_CLIENT_SECRET]) throw new Error('ALEXA_AVS_AVS_CLIENT_SECRET capability required')
     if (!this.caps[Capabilities.ALEXA_AVS_AVS_REFRESH_TOKEN]) throw new Error('ALEXA_AVS_AVS_REFRESH_TOKEN capability required')
+    // it is validated, but not used. It looks strange that we cant specifiy the language for AVS, so better leave it here
     if (!this.caps[Capabilities.ALEXA_AVS_AVS_LANGUAGE_CODE]) throw new Error('ALEXA_AVS_AVS_LANGUAGE_CODE capability required')
   }
 
