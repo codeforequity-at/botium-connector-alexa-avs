@@ -29,6 +29,16 @@ The Alexa skill to test doesn't have to be published - it can be tested while st
 ### Node.js v10
 Node.js v8 required, but Node.js v10 recommended because Http2 module of Node.js (AVS uses HTTP2) 
 
+### ALSA backend (Linux only)
+
+Depending on your Linux distribution:
+
+    > sudo yum install alsa-lib-devel
+    or
+    > sudo apt-get install libasound2-dev
+
+_See [here](https://github.com/TooTallNate/node-speaker) for more info._
+
 ### Google Cloud Text-to-Speech API
 1.  [Select or create](https://console.cloud.google.com/project) a Cloud Platform project
 2.  [Enable billing](https://support.google.com/cloud/answer/6293499#enable-billing) for your project (free tier available).
