@@ -1,7 +1,11 @@
 {
- "deviceInfo": {
-  "clientId": "xxx",
-  "clientSecret": "xxx",
-  "productId": "xxx"
- }
+  "deviceInfo": {
+    "clientId": "xxx",
+    "clientSecret": "xxx",
+    "productId": "xxx"
+  },
+  "region": "xxx",
+  "accessKeyId": "xxx",
+  "secretAccessKey": "xxx",
+  "bucketName": "xxx"
 }
