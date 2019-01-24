@@ -25,6 +25,7 @@ It can be used as any other Botium connector with all Botium Stack components:
 The Alexa skill to test doesn't have to be published - it can be tested while still in "development mode", making this connector the perfect choice for __Continuous Testing in CI Pipelines__.
 
 ## Requirements
+For Text-To-Speech and Speech-To-Text, this connector currently supports cloud services by Amazon and Google. You only have to configure one of them.
 
 ### Node.js v10
 Node.js v8 required, but Node.js v10 recommended because Http2 module of Node.js (AVS uses HTTP2) 
@@ -36,18 +37,30 @@ Node.js v8 required, but Node.js v10 recommended because Http2 module of Node.js
 4.  [Set up authentication with a service account](https://cloud.google.com/docs/authentication/getting-started) so you can access the
     API from your local workstation. You will need the JSON credentials file later.
 
-### Amazon Polly
-[See steps](https://docs.aws.amazon.com/polly/latest/dg/setting-up.html)  
- 
 ### Google Cloud Speech-to-Text API
 * Same steps as in Google Cloud Text-to-Speech API, just other API
 * It is recommended that Speech-to-Text and Text-to-Speech API are sharing the same project and the same credentials
 
+### Amazon Polly
+[See steps](https://docs.aws.amazon.com/polly/latest/dg/setting-up.html)  
+
+In short:
+* [Create an IAM user](https://console.aws.amazon.com/iam/) (see [here](https://docs.aws.amazon.com/de_de/IAM/latest/UserGuide/id_users_create.html) for help)
+  * Important: choose _Programmatic access_ as access type
+  * Note access key and secret, you need it later
+* Choose _Attach existing policies to user directly_ to give permissions _AmazonPollyFullAccess_
+  * Feel free to use finer grained policies if you know what you are doing
+
 ### Amazon Transcribe
-* Amazon Transcribe is very slow for our usecase, use Google Cloud Speech-to-Text API if possible
-* Same steps as Amazon Polly, just Transcribe requires full access to S3 too.  
-* It is recommended that Amazon Polly, and Transcribe are sharing the same user. A single user with 3 API permission.
-* Transcribe requires a bucket in S3. Its name is default botium-connector-alexa-avs.
+_Amazon Transcribe is **very slow** for our usecase, use Google Cloud Speech-to-Text API if possible_
+
+_Amazon Transcribe only worked for **english language** in our tests_
+
+* [Create an S3 Bucket](https://console.aws.amazon.com/s3/)
+  * Botium uses default name _botium-connector-alexa-avs_
+* Amazon Polly and Amazon Transcribe are sharing the same IAM user by default (can be changed in botium.json later)
+* Add existing policies _AmazonTranscribeFullAccess_ and _AmazonS3FullAccess_ to this user
+  * Feel free to use finer grained policies if you know what you are doing
 
 ### Amazon AVS API of the Product to test
 [Steps to setup](https://developer.amazon.com/de/docs/alexa-voice-service/code-based-linking-other-platforms.html#step1) - follow "Step 1: Enable CBL" and note your "Client ID", the "Client secret" and your "Product ID".
