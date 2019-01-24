@@ -1,0 +1,13 @@
+waschmittel
+
+#me
+ich möchte waschmittel kaufen ?
+
+#bot
+
+#bot
+
+#bot
+
+#me
+abbrechen bitte

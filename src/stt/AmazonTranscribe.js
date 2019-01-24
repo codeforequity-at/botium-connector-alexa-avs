@@ -65,7 +65,7 @@ class AmazonTranscribe {
           return reject(new Error(`Upload to S3 failed: ${util.inspect(err)}`))
         }
 
-        debug(`S3 upload succesful ${util.inspect(s3Response)}`)
+        debug(`S3 upload succesfull ${util.inspect(s3Response)}`)
 
         // 2. Transcribe job start
         const transcriptionJobName = 'to-transcribe-job-' + processId
@@ -151,7 +151,7 @@ const _cleanup = (options) => {
         if (err) {
           return reject(new Error(`Failed to download transcription: ${util.inspect(err)}`))
         }
-        debug(`S3 dowload transcribe succesful ${util.inspect(data)}`)
+        debug(`S3 download transcribe succesfull ${util.inspect(data)}`)
         resolve(data)
       }
     )
@@ -169,9 +169,9 @@ const _downloadTranscription = (options) => {
         if (err) {
           return reject(new Error(`Failed to download transcription: ${util.inspect(err)}`))
         }
-        debug(`S3 dowload transcribe succesful ${util.inspect(data)}`)
+        debug(`S3 download transcribe succesful ${util.inspect(data)}`)
         const json = JSON.parse(data.Body.toString())
-        debug(`S3 dowload transcribe as JSON ${util.inspect(json)}`)
+        debug(`S3 download transcribe as JSON ${JSON.stringify(json, null, 2)}`)
         if (json.results.transcripts.length !== 1) {
           return reject(new Error(`Unknown transcription format: ${util.inspect(json.results.transcripts)}`))
         }
@@ -207,7 +207,7 @@ const _startPolling = (options) => {
           return reject(new Error(`Transcription job unknown status ${data.TranscriptionJob.TranscriptionJobStatus} result ${util.inspect(data)}`))
         }
 
-        debug(`Transcription job finished succesful ${util.inspect(data)}`)
+        debug(`Transcription job finished succesfull ${util.inspect(data)}`)
         return resolve(data)
       }
     )
