@@ -11,6 +11,8 @@ This is a [Botium](https://github.com/codeforequity-at/botium-core) connector fo
 __Did you read the [Botium in a Nutshell](https://medium.com/@floriantreml/botium-in-a-nutshell-part-1-overview-f8d0ceaf8fb4) articles ? Be warned, without prior knowledge of Botium you won't be able to properly use this library!__
 
 ## How it works ?
+This connector is not bound to any Alexa Skill. Works as a normal Alexa device. So you have to activate your Alexa skill with its activation utterance.  
+
 The steps for Botium to run a conversation with an Alexa skill are:
 
 * Converts text to speech ([Cloud Speech-to-Text API](https://cloud.google.com/text-to-speech/) or [Amazon Polly](https://aws.amazon.com/polly))
