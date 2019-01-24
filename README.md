@@ -11,11 +11,13 @@ This is a [Botium](https://github.com/codeforequity-at/botium-core) connector fo
 __Did you read the [Botium in a Nutshell](https://medium.com/@floriantreml/botium-in-a-nutshell-part-1-overview-f8d0ceaf8fb4) articles ? Be warned, without prior knowledge of Botium you won't be able to properly use this library!__
 
 ## How it works ?
+This connector is not bound to any Alexa Skill. Works as a normal Alexa device. So you have to activate your Alexa skill with its activation utterance.  
+
 The steps for Botium to run a conversation with an Alexa skill are:
 
-* Converts text to speech ([Cloud Speech-to-Text API](https://cloud.google.com/text-to-speech/))
+* Converts text to speech ([Cloud Speech-to-Text API](https://cloud.google.com/text-to-speech/) or [Amazon Polly](https://aws.amazon.com/polly))
 * Asks Alexa with [Amazon AVS](https://developer.amazon.com/de/docs/alexa-voice-service/get-started-with-alexa-voice-service.html)
-* Converts answer to text ([Cloud Text-to-Speech API, aka Cloud Speech API](https://cloud.google.com/speech-to-text/))
+* Converts answer to text ([Cloud Text-to-Speech API, aka Cloud Speech API](https://cloud.google.com/speech-to-text/)  or [Amazon Transcribe](https://aws.amazon.com/transcribe/))
 
 It can be used as any other Botium connector with all Botium Stack components:
 * [Botium CLI](https://github.com/codeforequity-at/botium-cli/)
@@ -25,6 +27,7 @@ It can be used as any other Botium connector with all Botium Stack components:
 The Alexa skill to test doesn't have to be published - it can be tested while still in "development mode", making this connector the perfect choice for __Continuous Testing in CI Pipelines__.
 
 ## Requirements
+For Text-To-Speech and Speech-To-Text, this connector currently supports cloud services by Amazon and Google. You only have to configure one of them.
 
 ### Node.js v10
 Node.js v8 required, but Node.js v10 recommended because Http2 module of Node.js (AVS uses HTTP2) 
@@ -50,6 +53,27 @@ _See [here](https://github.com/TooTallNate/node-speaker) for more info._
 * Same steps as in Google Cloud Text-to-Speech API, just other API
 * It is recommended that Speech-to-Text and Text-to-Speech API are sharing the same project and the same credentials
 
+### Amazon Polly
+[See steps](https://docs.aws.amazon.com/polly/latest/dg/setting-up.html)  
+
+In short:
+* [Create an IAM user](https://console.aws.amazon.com/iam/) (see [here](https://docs.aws.amazon.com/de_de/IAM/latest/UserGuide/id_users_create.html) for help)
+  * Important: choose _Programmatic access_ as access type
+  * Note access key and secret, you need it later
+* Choose _Attach existing policies to user directly_ to give permissions _AmazonPollyFullAccess_
+  * Feel free to use finer grained policies if you know what you are doing
+
+### Amazon Transcribe
+_Amazon Transcribe is **very slow** for our usecase, use Google Cloud Speech-to-Text API if possible_
+
+_Amazon Transcribe only worked for **english language** in our tests_
+
+* [Create an S3 Bucket](https://console.aws.amazon.com/s3/)
+  * Botium uses default name _botium-connector-alexa-avs_
+* Amazon Polly and Amazon Transcribe are sharing the same IAM user by default (can be changed in botium.json later)
+* Add existing policies _AmazonTranscribeFullAccess_ and _AmazonS3FullAccess_ to this user
+  * Feel free to use finer grained policies if you know what you are doing
+
 ### Amazon AVS API of the Product to test
 [Steps to setup](https://developer.amazon.com/de/docs/alexa-voice-service/code-based-linking-other-platforms.html#step1) - follow "Step 1: Enable CBL" and note your "Client ID", the "Client secret" and your "Product ID".
 
@@ -59,19 +83,29 @@ The connector repository includes a tool to compose the Botium capabilities (inc
 
 ### 1. Prepare amazonConfig.json
 
-Copy AVS Product ID, Client ID and Client secret from steps above to a file named amazonConfig.json (see sample in cfg folder of this repository):
+* Copy AVS Product ID, Client ID and Client secret from steps above (Amazon AVS API of the Product to test) to a file named amazonConfig.json (see sample in cfg folder of this repository):
+* Just Amazon Tanscibe / Amazon Polly:
+    * Set region you want to use (Be aware, a region has not all APIs. For example eu-west-1 has Polly, Transcribe, and S3 too)
+    * Copy AVS Access Key ID, and Secret Access Key from steps above  (Amazon Polly, Amazon Transcribe)
+* Just Amazon Transcibe  
+    * Create a bucket in S3, or use an existing one. 
 
 ```
 {
- "deviceInfo": {
-  "clientId": "xxx",
-  "clientSecret": "xxx",
-  "productId": "xxx"
- }
+  "deviceInfo": {
+    "clientId": "xxx",
+    "clientSecret": "xxx",
+    "productId": "xxx"
+  },
+  "region": "xxx",
+  "accessKeyId": "xxx",
+  "secretAccessKey": "xxx",
+  "bucketName": "xxx"
 }
+
 ```
 
-### 2. Prepare googleConfig.json
+### 2. Prepare googleConfig.json (Optional)
 
 Copy and rename Google Cloud JSON credentials to a file named googleConfig.json. (Suppose Speech-to-Text and Text-to-Speech API are sharing the same project)
 
@@ -105,7 +139,6 @@ or
 > ./node_modules/.bin/botium-connector-alexa-avs-init
 ```
 
-Either way, there are optional parameters for config files, and for language. You can see them with --help.
 Just follow the suggested steps, you will be presented a hyperlink you have to open in your browser to connect the Botium virtual device to your Amazon account.
 
 ### 4. Use the generated botium.json
@@ -130,6 +163,9 @@ The simpliest way to acquire it, is the initialization tool described above
 ### ALEXA_AVS_AVS_LANGUAGE_CODE
 Language setting for Alexa. Example: en_US
 
+### ALEXA_AVS_TTS
+GOOGLE_CLOUD_TEXT_TO_SPEECH or AMAZON_POLLY
+
 ### ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY
 See json downloaded from Google
 
@@ -137,7 +173,22 @@ See json downloaded from Google
 See json downloaded from Google
 
 ### ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE
-Language setting for Goolge. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE
+Language setting for Google. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE
+
+### ALEXA_AVS_TTS_AMAZON_POLLY_REGION
+Amazon region. Any region can be used which supports Amazon Polly
+
+### ALEXA_AVS_TTS_AMAZON_POLLY_ACCESS_KEY_ID
+See json downloaded from Amazon
+
+### ALEXA_AVS_TTS_AMAZON_POLLY_SECRET_ACCESS_KEY
+See json downloaded from Amazon
+
+### ALEXA_AVS_TTS_AMAZON_POLLY_LANGUAGE_CODE
+Language setting for Amazon. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE
+
+### ALEXA_AVS_STT
+GOOGLE_CLOUD_SPEECH or AMAZON_TRANSCRIBE
 
 ### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY
 See json downloaded from Google. Same as ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY if they sharing the same project
@@ -147,6 +198,21 @@ See json downloaded from Google. Same as ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEE
 
 ### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE
 Language setting for Goolge. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE and ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE
+
+### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_REGION
+Amazon region. Any region can be used which supports Amazon Polly
+
+### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID
+See json downloaded from Amazon
+
+### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY
+See json downloaded from Amazon
+
+### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_LANGUAGE_CODE
+Language setting for Amazon. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE
+
+### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME
+The name of an existing S3 bucket
 
 ## Open Issues and Restrictions
 * If a text is very long (more thousand), then connector dies because AVS error. Long messages should be sent in chunks.
