@@ -71,4 +71,5 @@ dist
 
 # alexa answer is stored as mp3 in debug mode
 *.mp3
+*.wav
 package-lock.json

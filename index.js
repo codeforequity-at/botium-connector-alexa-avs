@@ -67,8 +67,12 @@ class BotiumConnectorAlexaAvs {
                 debug(`Answer converting to text, format "${audioBuffer.format}", size ${audioBuffer.payload.length}...`)
                 return this.stt.Recognize(audioBuffer.payload)
                   .then((botAsText) => {
-                    debug(`Answer converted to text "${botAsText}" succeeded`)
-                    responseTexts.push(botAsText)
+                    if (botAsText) {
+                      debug(`Answer converted to text "${botAsText}" succeeded`)
+                      responseTexts.push(botAsText)
+                    } else {
+                      debug(`Answer converted to empty text, skipping`)
+                    }
                   })
                   .catch(err => {
                     debug(`Answer conversion failed, format "${audioBuffer.format}", size ${audioBuffer.payload.length}: ${err}`)

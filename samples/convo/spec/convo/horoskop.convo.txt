@@ -1,0 +1,13 @@
+horoskop
+
+#me
+alexa starte Tageshoroskop
+
+#bot
+möchten Sie auch heute
+
+#me
+Ja
+
+#bot
+Horoskop
