@@ -21,7 +21,7 @@ The steps for Botium to run a conversation with an Alexa skill are:
 
 TTS and STT can translate wrong. And so the test will fail, even if Alexa works well.
 
-Pease check the pricing of the choosen APIs.
+Please check the pricing of the choosen APIs.
 
 It can be used as any other Botium connector with all Botium Stack components:
 * [Botium CLI](https://github.com/codeforequity-at/botium-cli/)
