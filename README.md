@@ -19,6 +19,10 @@ The steps for Botium to run a conversation with an Alexa skill are:
 * Asks Alexa with [Amazon AVS](https://developer.amazon.com/de/docs/alexa-voice-service/get-started-with-alexa-voice-service.html)
 * Converts answer to text ([Cloud Text-to-Speech API, aka Cloud Speech API](https://cloud.google.com/speech-to-text/)  or [Amazon Transcribe](https://aws.amazon.com/transcribe/))
 
+TTS and STT can translate wrong. And so the test will fail, even if Alexa works well.
+
+Pease check the pricing of the choosen APIs.
+
 It can be used as any other Botium connector with all Botium Stack components:
 * [Botium CLI](https://github.com/codeforequity-at/botium-cli/)
 * [Botium Bindings](https://github.com/codeforequity-at/botium-bindings/)
