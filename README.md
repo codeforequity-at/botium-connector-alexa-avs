@@ -225,6 +225,10 @@ _Default: true_
 After we got speech response from Alexa, there is a possibility to send 
 the expected Alexa answer as text with this audio to Google STT. Google will use this as [hint](https://cloud.google.com/speech-to-text/docs/basics#phrase-hints).
 
+If this flag is true, then the test is not strict. It can accept small differences between answer of Alexa, and our expectations in testcase. Because Google STT corrects the difference.
+
+If this flag is false, then the test is strict. A test can fail even if the answer of Alexa, and our expectations in testcase are the same. Just because Google STT doesn't translate well.
+
 ## Open Issues and Restrictions
 * If a text is very long (more thousand), then connector dies because AVS error. Long messages should be sent in chunks.
 * Stream/connection create/close optimalization. Create/close global, for dialog, or for question-answer pair?
