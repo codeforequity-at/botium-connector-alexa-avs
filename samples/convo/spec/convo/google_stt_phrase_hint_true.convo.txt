@@ -1,0 +1,10 @@
+google tts phrase hint true
+This testdase works well just for google tts, and just if the
+ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT flag is true.
+because alexa returns "wake up is usually defined as cause to become _a_ _wake_ or conscious"
+
+#me
+alexa wake up
+
+#bot
+wake up is usually defined as cause to become awake or conscious

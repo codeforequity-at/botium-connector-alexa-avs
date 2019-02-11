@@ -19,7 +19,8 @@ The steps for Botium to run a conversation with an Alexa skill are:
 * Asks Alexa with [Amazon AVS](https://developer.amazon.com/de/docs/alexa-voice-service/get-started-with-alexa-voice-service.html)
 * Converts answer to text ([Cloud Text-to-Speech API, aka Cloud Speech API](https://cloud.google.com/speech-to-text/)  or [Amazon Transcribe](https://aws.amazon.com/transcribe/))
 
-TTS and STT can translate wrong. And so the test will fail, even if Alexa works well.
+TTS and STT can translate wrong. And so the test will fail, even if Alexa works well. 
+Google STT handles this problem more sophisticated. See ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT Capability.
 
 Please check the pricing of the choosen APIs.
 
@@ -217,6 +218,12 @@ Language setting for Amazon. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE
 
 ### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME
 The name of an existing S3 bucket
+
+### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT
+_Default: true_
+
+After we got speech response from Alexa, there is a possibility to send 
+the expected Alexa answer as text with this audio to Google STT. Google will use this as [hint](https://cloud.google.com/speech-to-text/docs/basics#phrase-hints).
 
 ## Open Issues and Restrictions
 * If a text is very long (more thousand), then connector dies because AVS error. Long messages should be sent in chunks.
