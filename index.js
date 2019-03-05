@@ -46,7 +46,7 @@ class BotiumConnectorAlexaAvs {
     return Promise.resolve()
   }
 
-  UserSays ({messageText, expectedAnswer}) {
+  UserSays ({messageText, conversation, currentStepIndex}) {
     debug('UserSays called')
     return new Promise((resolve, reject) => {
       debug(`User text "${messageText}" converting to speech...`)
@@ -65,7 +65,7 @@ class BotiumConnectorAlexaAvs {
             audioBuffers.forEach((audioBuffer) => {
               processingPromise = processingPromise.then(() => {
                 debug(`Answer converting to text, format "${audioBuffer.format}", size ${audioBuffer.payload.length}...`)
-                return this.stt.Recognize(audioBuffer.payload, expectedAnswer)
+                return this.stt.Recognize(audioBuffer.payload, conversation, currentStepIndex)
                   .then((botAsText) => {
                     if (botAsText) {
                       debug(`Answer converted to text "${botAsText}" succeeded`)

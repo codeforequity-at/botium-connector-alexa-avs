@@ -13,11 +13,13 @@ const Capabilities = {
   ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY: 'ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY',
   ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: 'ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL',
   ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: 'ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE',
-  ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT: 'ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT'
+  ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT: 'ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT',
+  ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT_USE_NEGATED: 'ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT_USE_NEGATED'
 }
 
 const Defaults = {
-  [Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT]: 'true'
+  [Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT]: 'true',
+  [Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT_USE_NEGATED]: 'true'
 }
 
 class GoogleCloudSpeech {
@@ -29,7 +31,9 @@ class GoogleCloudSpeech {
     if (!this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY]) throw new Error('ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY capability required')
     if (!this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL]) throw new Error('ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL capability required')
     if (!this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE]) throw new Error('ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE capability required')
+
     if (this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT] !== false) this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT] = Defaults[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT]
+    if (this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT_USE_NEGATED] !== false) this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT_USE_NEGATED] = Defaults[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT]
   }
 
   Build () {
@@ -51,14 +55,14 @@ class GoogleCloudSpeech {
     }
   }
 
-  Recognize (audioAsMP3, expectedAnswer) {
+  Recognize (audioAsMP3, conversation, currentStepIndex) {
     debug('Recognize called')
     return mp3ToWav(audioAsMP3)
       .then((audioAsWav) => {
         const currentRequest = Object.assign({audio: {content: audioAsWav}}, this.defaultRequest)
-
-        if (expectedAnswer && this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT]) {
-          currentRequest.config.speechContexts = [{phrases: tokenizer(expectedAnswer).filter((token) => !token.startsWith(VARIABLE_PREFIX))}]
+        const expectedAnswer = this._getExpectedAnswer(conversation, currentStepIndex)
+        if (expectedAnswer) {
+          currentRequest.config.speechContexts = [{phrases: expectedAnswer}]
         }
         debug(`Executing STT with args ${util.inspect(currentRequest)}`)
         return this.client.recognize(currentRequest)
@@ -80,6 +84,29 @@ class GoogleCloudSpeech {
     this.defaultRequest = null
     this.client = null
     return Promise.resolve()
+  }
+
+  _getExpectedAnswer (conversation, currentStepIndex) {
+    if (!this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT]) {
+      debug(`Expected answer turned off`)
+      return null
+    }
+
+    const result = []
+    for (let i = currentStepIndex + 1; i < conversation.length && conversation[i].sender === 'bot'; i++) {
+      const meSaysStep = conversation[i]
+      if ((meSaysStep.messageText && meSaysStep.messageText.length > 0)) {
+        if (!meSaysStep.not || this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT_USE_NEGATED]) {
+          result.push(tokenizer(meSaysStep.messageText).filter((token) => !token.startsWith(VARIABLE_PREFIX)).join(' '))
+        } else {
+          debug(`Expected answer, not answer skipped ${meSaysStep.messageText}`)
+        }
+      }
+    }
+
+    debug(`Expected answer ${result}`)
+
+    return result
   }
 }
 
