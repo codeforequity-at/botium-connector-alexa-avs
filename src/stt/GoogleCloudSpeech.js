@@ -87,6 +87,10 @@ class GoogleCloudSpeech {
   }
 
   _getExpectedAnswer (conversation, currentStepIndex) {
+    if (!conversation || !(currentStepIndex >= 0)) {
+      debug(`Expected answer feature is not supported`)
+      return null
+    }
     if (!this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT]) {
       debug(`Expected answer turned off`)
       return null
