@@ -222,12 +222,26 @@ The name of an existing S3 bucket
 ### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT
 _Default: true_
 
-After we got speech response from Alexa, there is a possibility to send 
-the expected Alexa answer as text with this audio to Google STT. Google will use this as [hint](https://cloud.google.com/speech-to-text/docs/basics#phrase-hints).
+After we got speech response from Alexa, and we are sending it to Google STT, there is a possibility to send 
+the expected answer with it. Google will use this as [hint](https://cloud.google.com/speech-to-text/docs/basics#phrase-hints).
 
 If this flag is true, then the test is not strict. It can accept small differences between answer of Alexa, and our expectations in testcase. Because Google STT corrects the difference.
 
 If this flag is false, then the test is strict. A test can fail even if the answer of Alexa, and our expectations in testcase are the same. Just because Google STT doesn't translate well.
+
+### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT_USE_NEGATED
+_Default: true_
+
+The utterance is negated
+```
+#me
+hi!
+
+#bot
+!goodbye
+``` 
+
+Then it will be send as expected answer to Google STT, expect this flag is false.
 
 ## Open Issues and Restrictions
 * If a text is very long (more thousand), then connector dies because AVS error. Long messages should be sent in chunks.
