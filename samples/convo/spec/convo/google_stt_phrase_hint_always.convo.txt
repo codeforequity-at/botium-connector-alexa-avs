@@ -1,0 +1,7 @@
+google tts phrase hint always
+
+#me
+alexa wake up
+
+#bot
+wake up is usually defined as cause to become a wake or conscious
