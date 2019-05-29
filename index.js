@@ -46,51 +46,80 @@ class BotiumConnectorAlexaAvs {
     return Promise.resolve()
   }
 
-  UserSays ({messageText, conversation, currentStepIndex}) {
-    debug('UserSays called')
+  UserSays (mockMsg) {
+    const { messageText, currentStepIndex } = mockMsg
+    debug(`UserSays called: ${messageText}`)
+
+    if (!mockMsg.attachments) {
+      mockMsg.attachments = []
+    }
+
     return new Promise((resolve, reject) => {
       debug(`User text "${messageText}" converting to speech...`)
       this.tts.Synthesize(messageText)
         .then((userAsSpeech) => {
           debug(`User text "${messageText}" conversion to speech succeeded`)
+          mockMsg.attachments.push({
+            name: `alexa-avs-request-${currentStepIndex}.wav`,
+            mimeType: 'audio/wav',
+            base64: userAsSpeech.toString('base64')
+          })
           debug(`Alexa answering...`)
           return this.avs.UserSays(userAsSpeech)
         })
         .then((audioBuffers) => {
-          debug(`Alexa answered succesfull`)
+          debug(`Alexa answered successfull`)
+          resolve()
 
-          const responseTexts = []
-          if (audioBuffers && audioBuffers.length > 0) {
-            let processingPromise = Promise.resolve()
-            audioBuffers.forEach((audioBuffer) => {
-              processingPromise = processingPromise.then(() => {
-                debug(`Answer converting to text, format "${audioBuffer.format}", size ${audioBuffer.payload.length}...`)
-                return this.stt.Recognize(audioBuffer.payload, conversation, currentStepIndex)
-                  .then((botAsText) => {
-                    if (botAsText) {
-                      debug(`Answer converted to text "${botAsText}" succeeded`)
-                      responseTexts.push(botAsText)
-                    } else {
-                      debug(`Answer converted to empty text, skipping`)
-                    }
-                  })
-                  .catch(err => {
-                    debug(`Answer conversion failed, format "${audioBuffer.format}", size ${audioBuffer.payload.length}: ${err}`)
-                  })
-              })
-            })
-            processingPromise.then(() => {
-              debug(`Answer handling ready, processed ${audioBuffers.length} audio responses.`)
-              resolve()
-
-              responseTexts.forEach(messageText => {
-                setTimeout(() => this.queueBotSays({ sender: 'bot', messageText }), 0)
-              })
-            })
-          }
+          setTimeout(() => this._processResponse(audioBuffers, mockMsg), 0)
         })
         .catch(reject)
     })
+  }
+
+  _processResponse (audioBuffers, mockMsg) {
+    const { conversation, currentStepIndex } = mockMsg
+
+    if (audioBuffers && audioBuffers.length > 0) {
+      let processingPromise = Promise.resolve()
+      audioBuffers.forEach((audioBuffer, index) => {
+        processingPromise = processingPromise.then(() => {
+          debug(`Answer converting to text, format "${audioBuffer.format}", size ${audioBuffer.payload.length}...`)
+          return this.stt.Recognize(audioBuffer.payload, conversation, currentStepIndex)
+            .then((botAsText) => {
+              if (botAsText) {
+                debug(`Answer converted to text "${botAsText}" succeeded`)
+              } else {
+                debug(`Answer converted to empty text`)
+              }
+              const botMsg = {
+                sender: 'bot',
+                messageText: botAsText || '',
+                sourceData: {
+                  audioBuffer: {
+                    format: audioBuffer.format,
+                    length: audioBuffer.payload.length
+                  }
+                },
+                attachments: [
+                  {
+                    name: `alexa-avs-response-${index}.mp3`,
+                    mimeType: 'audio/mpeg3',
+                    base64: audioBuffer.payload.toString('base64')
+                  }
+                ]
+              }
+              this.queueBotSays(botMsg)
+            })
+            .catch(err => {
+              debug(`Answer conversion failed, format "${audioBuffer.format}", size ${audioBuffer.payload.length}: ${err}`)
+            })
+        })
+      })
+      processingPromise.then(() => {
+        debug(`Answer handling ready, processed ${audioBuffers.length} audio responses.`)
+      })
+    }
   }
 
   Stop () {
