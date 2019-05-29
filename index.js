@@ -84,7 +84,7 @@ class BotiumConnectorAlexaAvs {
               resolve()
 
               responseTexts.forEach(messageText => {
-                this.queueBotSays({ sender: 'bot', messageText })
+                setTimeout(() => this.queueBotSays({ sender: 'bot', messageText }), 0)
               })
             })
           }

@@ -1,0 +1,6 @@
+bank1
+
+#me
+Alexa, frag Bank Austria: Was ist die Eurozone?
+
+#bot
