@@ -136,6 +136,11 @@ class AVS {
       })
   }
 
+  Start () {
+    debug('Start called')
+    return Promise.resolve()
+  }
+
   UserSays (audio) {
     debug('UserSays called')
     if (debug.enabled) {

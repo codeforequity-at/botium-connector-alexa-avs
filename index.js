@@ -1,3 +1,4 @@
+const util = require('util')
 const debug = require('debug')('botium-connector-alexa-avs-main')
 const _ = require('lodash')
 
@@ -43,7 +44,7 @@ class BotiumConnectorAlexaAvs {
   Start () {
     debug('Start called')
 
-    return Promise.resolve()
+    return Promise.all([this.tts.Start(), this.stt.Start(), this.avs.Start()])
   }
 
   UserSays ({messageText, conversation, currentStepIndex}) {
@@ -75,7 +76,7 @@ class BotiumConnectorAlexaAvs {
                     }
                   })
                   .catch(err => {
-                    debug(`Answer conversion failed, format "${audioBuffer.format}", size ${audioBuffer.payload.length}: ${err}`)
+                    debug(`Answer conversion failed, format "${audioBuffer.format}", size ${audioBuffer.payload.length}: ${util.inspect(err)}`)
                   })
               })
             })
