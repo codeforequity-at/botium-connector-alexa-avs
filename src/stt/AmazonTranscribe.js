@@ -15,6 +15,7 @@ const Capabilities = {
 class AmazonTranscribe {
   constructor (caps) {
     this.caps = caps
+    this.running = false
   }
 
   Validate () {
@@ -45,6 +46,12 @@ class AmazonTranscribe {
       accessKeyId: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID],
       secretAccessKey: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY]
     })
+  }
+
+  Start () {
+    debug('Start called')
+    this.running = true
+    return Promise.resolve()
   }
 
   Recognize (audio) {
@@ -94,12 +101,17 @@ class AmazonTranscribe {
               fileKey: fileKey,
               bucket: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME],
               transcriptionJobName: transcriptionJobName,
-              mediaFileUri: s3Response.Location
+              mediaFileUri: s3Response.Location,
+              isRunning: () => { return this.running }
             }
 
             // 2. polling the job
             return _startPolling(options)
               .then((data) => {
+                if (this.running) {
+                  debug(`Polling finished, process stopped`)
+                  return Promise.reject(new Error('Already stopped'))
+                }
                 const { key } = AmazonS3URI(data.TranscriptionJob.Transcript.TranscriptFileUri)
                 options = {...options, outputfileKey: key}
                 // 3. download result
@@ -120,6 +132,8 @@ class AmazonTranscribe {
   }
 
   Stop () {
+    debug('Stop called')
+    this.running = false
     return Promise.resolve()
   }
 
@@ -184,11 +198,16 @@ const _downloadTranscription = (options) => {
 
 const _startPolling = (options) => {
   return new Promise((resolve, reject) => {
+    if (!options.isRunning()) {
+      debug(`Polling finished, process stopped`)
+      return reject(new Error('Already stopped'))
+    }
     debug(`Polling...`)
     options.client.getTranscriptionJob(
       {TranscriptionJobName: options.transcriptionJobName},
       (err, data) => {
         if (err) {
+          debug(`Failed to get transcribe job: ${util.inspect(err)}`)
           return reject(new Error(`Failed to get transcribe job: ${util.inspect(err)}`))
         }
         if (data.TranscriptionJob.TranscriptionJobStatus === 'IN_PROGRESS') {
@@ -201,9 +220,11 @@ const _startPolling = (options) => {
           return
         }
         if (data.TranscriptionJob.TranscriptionJobStatus === 'FAILED') {
+          debug(`Transcribe job is failed ${util.inspect(data)}`)
           return reject(new Error(`Transcription job failed ${util.inspect(data)}`))
         }
         if (data.TranscriptionJob.TranscriptionJobStatus !== 'COMPLETED') {
+          debug(`Transcription job unknown status ${data.TranscriptionJob.TranscriptionJobStatus} result ${util.inspect(data)}`)
           return reject(new Error(`Transcription job unknown status ${data.TranscriptionJob.TranscriptionJobStatus} result ${util.inspect(data)}`))
         }
 

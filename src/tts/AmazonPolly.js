@@ -37,6 +37,11 @@ class AmazonPolly {
     }
   }
 
+  Start () {
+    debug('Start called')
+    return Promise.resolve()
+  }
+
   Synthesize (text) {
     debug('Synthesize called')
     return new Promise((resolve, reject) => {
