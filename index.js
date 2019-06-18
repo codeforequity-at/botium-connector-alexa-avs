@@ -113,7 +113,7 @@ class BotiumConnectorAlexaAvs {
               this.queueBotSays(botMsg)
             })
             .catch(err => {
-                    debug(`Answer conversion failed, format "${audioBuffer.format}", size ${audioBuffer.payload.length}: ${util.inspect(err)}`)
+              debug(`Answer conversion failed, format "${audioBuffer.format}", size ${audioBuffer.payload.length}: ${util.inspect(err)}`)
             })
         })
       })
