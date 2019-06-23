@@ -88,6 +88,8 @@ The connector repository includes a tool to compose the Botium capabilities (inc
 
 ### 1. Prepare amazonConfig.json
 
+If you use Botium Box, then this step is optonal. You can use the created amazonConfig.json in Botium Box, or you can set the values (AVS Product ID, Client ID...) direct in Botium Box
+
 * Copy AVS Product ID, Client ID and Client secret from steps above (Amazon AVS API of the Product to test) to a file named amazonConfig.json (see sample in cfg folder of this repository):
 * Just Amazon Tanscibe / Amazon Polly:
     * Set region you want to use (Be aware, a region has not all APIs. For example eu-west-1 has Polly, Transcribe, and S3 too)
@@ -143,6 +145,8 @@ When you cloned or downloaded this repository, and you are in the "samples" fold
 or
 > ./node_modules/.bin/botium-connector-alexa-avs-init
 ```
+
+If you use Botium Box, you dont have to use this tool. It is already built into Box.
 
 Just follow the suggested steps, you will be presented a hyperlink you have to open in your browser to connect the Botium virtual device to your Amazon account.
 
