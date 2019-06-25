@@ -13,7 +13,8 @@ const Defaults = {
 }
 
 class BotiumConnectorAlexaAvs {
-  constructor ({ queueBotSays, caps }) {
+  constructor ({ container, queueBotSays, caps }) {
+    this.container = container
     this.queueBotSays = queueBotSays
     this.caps = caps
   }
@@ -23,13 +24,13 @@ class BotiumConnectorAlexaAvs {
     if (!this.caps[Capabilities.ALEXA_AVS_TTS]) this.caps[Capabilities.ALEXA_AVS_TTS] = Defaults[Capabilities.ALEXA_AVS_TTS]
     if (!this.caps[Capabilities.ALEXA_AVS_STT]) this.caps[Capabilities.ALEXA_AVS_STT] = Defaults[Capabilities.ALEXA_AVS_STT]
 
-    this.tts = new (require('./src/tts/' + _toModuleName(this.caps[Capabilities.ALEXA_AVS_TTS])))(this.caps)
+    this.tts = new (require('./src/tts/' + _toModuleName(this.caps[Capabilities.ALEXA_AVS_TTS])))(this.caps, this.container.tempDirectory)
     this.tts.Validate()
 
-    this.stt = new (require('./src/stt/' + _toModuleName(this.caps[Capabilities.ALEXA_AVS_STT])))(this.caps)
+    this.stt = new (require('./src/stt/' + _toModuleName(this.caps[Capabilities.ALEXA_AVS_STT])))(this.caps, this.container.tempDirectory)
     this.stt.Validate()
 
-    this.avs = new (require('./src/avs/AVSSpeechClient')).AVS(this.caps)
+    this.avs = new (require('./src/avs/AVSSpeechClient')).AVS(this.caps, this.container.tempDirectory)
     this.avs.Validate()
 
     return Promise.resolve()
