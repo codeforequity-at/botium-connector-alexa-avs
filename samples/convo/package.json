@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "init-alexa-avs": "botium-connector-alexa-avs-init",
-    "test": "mocha spec",
-    "postinstall": "npm run init-alexa-avs"
+    "test": "mocha spec"
   },
   "author": "",
   "license": "ISC",

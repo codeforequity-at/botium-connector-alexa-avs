@@ -1,5 +1,6 @@
 const util = require('util')
 const fs = require('fs')
+const path = require('path')
 const httpParser = require('http-message-parser')
 const debug = require('debug')('botium-connector-alexa-avs-avs')
 const uuidv1 = require('uuid/v1')
@@ -82,8 +83,9 @@ const Capabilities = {
 }
 
 class AVS {
-  constructor (caps) {
+  constructor (caps, tempDirectory) {
     this.caps = caps
+    this.tempDirectory = tempDirectory
     this.messageId = 0
   }
 
@@ -144,7 +146,7 @@ class AVS {
   UserSays (audio) {
     debug('UserSays called')
     if (debug.enabled) {
-      fs.writeFileSync(`UserSays.wav`, audio)
+      fs.writeFileSync(path.resolve(this.tempDirectory, `UserSays.wav`), audio)
     }
 
     return new Promise((resolve, reject) => {
@@ -251,7 +253,7 @@ class AVS {
           })
           if (audioBuffers && audioBuffers.length > 0 && debug.enabled) {
             audioBuffers.forEach((ab, index) => {
-              fs.writeFileSync(`AlexaSaid${index}.mp3`, ab.payload)
+              fs.writeFileSync(path.resolve(this.tempDirectory, `AlexaSaid${index}.mp3`), ab.payload)
             })
           }
           resolve(audioBuffers)
