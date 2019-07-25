@@ -38,6 +38,7 @@
   "dependencies": {
     "@google-cloud/speech": "^3.2.3",
     "@google-cloud/text-to-speech": "^1.1.2",
+    "acorn": "^6.2.1",
     "amazon-s3-uri": "0.0.3",
     "arraybuffer-to-buffer": "0.0.6",
     "audio-decode": "^1.4.0",
