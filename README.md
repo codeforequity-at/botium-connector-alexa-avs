@@ -88,7 +88,7 @@ The connector repository includes a tool to compose the Botium capabilities (inc
 
 ### 1. Prepare amazonConfig.json
 
-If you use Botium Box, then this step is optonal. You can use the created amazonConfig.json in Botium Box, or you can set the values (AVS Product ID, Client ID...) direct in Botium Box
+If you use Botium Box, then this step is optional. You can use the created amazonConfig.json in Botium Box, or you can set the values (AVS Product ID, Client ID...) direct in Botium Box
 
 * Copy AVS Product ID, Client ID and Client secret from steps above (Amazon AVS API of the Product to test) to a file named amazonConfig.json (see sample in cfg folder of this repository):
 * Just Amazon Tanscibe / Amazon Polly:
