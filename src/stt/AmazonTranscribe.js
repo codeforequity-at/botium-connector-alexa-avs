@@ -79,7 +79,7 @@ class AmazonTranscribe {
 
         const transcriptionParams = Object.assign(
           {
-            Media: {MediaFileUri: s3Response.Location},
+            Media: { MediaFileUri: s3Response.Location },
             TranscriptionJobName: transcriptionJobName,
             OutputBucketName: this.caps[Capabilities.ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME]
           },
@@ -109,11 +109,11 @@ class AmazonTranscribe {
             return _startPolling(options)
               .then((data) => {
                 if (this.running) {
-                  debug(`Polling finished, process stopped`)
+                  debug('Polling finished, process stopped')
                   return Promise.reject(new Error('Already stopped'))
                 }
                 const { key } = AmazonS3URI(data.TranscriptionJob.Transcript.TranscriptFileUri)
-                options = {...options, outputfileKey: key}
+                options = { ...options, outputfileKey: key }
                 // 3. download result
                 return _downloadTranscription(options)
                   .then((transcription) => {
@@ -199,12 +199,12 @@ const _downloadTranscription = (options) => {
 const _startPolling = (options) => {
   return new Promise((resolve, reject) => {
     if (!options.isRunning()) {
-      debug(`Polling finished, process stopped`)
+      debug('Polling finished, process stopped')
       return reject(new Error('Already stopped'))
     }
-    debug(`Polling...`)
+    debug('Polling...')
     options.client.getTranscriptionJob(
-      {TranscriptionJobName: options.transcriptionJobName},
+      { TranscriptionJobName: options.transcriptionJobName },
       (err, data) => {
         if (err) {
           debug(`Failed to get transcribe job: ${util.inspect(err)}`)

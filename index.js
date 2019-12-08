@@ -66,16 +66,19 @@ class BotiumConnectorAlexaAvs {
             mimeType: 'audio/wav',
             base64: userAsSpeech.toString('base64')
           })
-          debug(`Alexa answering...`)
+          debug('Alexa answering...')
           return this.avs.UserSays(userAsSpeech)
         })
         .then((audioBuffers) => {
-          debug(`Alexa answered successfull`)
+          debug('Alexa answered successfull')
           resolve()
 
           setTimeout(() => this._processResponse(audioBuffers, mockMsg), 0)
         })
-        .catch(reject)
+        .catch(err => {
+          debug(`AVS.UserSays failed: ${err.message}`)
+          reject(err)
+        })
     })
   }
 
@@ -92,7 +95,7 @@ class BotiumConnectorAlexaAvs {
               if (botAsText) {
                 debug(`Answer converted to text "${botAsText}" succeeded`)
               } else {
-                debug(`Answer converted to empty text`)
+                debug('Answer converted to empty text')
               }
               const botMsg = {
                 sender: 'bot',

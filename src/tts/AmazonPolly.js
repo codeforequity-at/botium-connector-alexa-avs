@@ -45,12 +45,12 @@ class AmazonPolly {
   Synthesize (text) {
     debug('Synthesize called')
     return new Promise((resolve, reject) => {
-      this.client.synthesizeSpeech(Object.assign({Text: text}, this.defaultRequest), (err, response) => {
+      this.client.synthesizeSpeech(Object.assign({ Text: text }, this.defaultRequest), (err, response) => {
         if (err) {
           return reject(err)
         }
 
-        debug(`Synthesize finised`)
+        debug('Synthesize finised')
         return resolve(response.AudioStream)
       })
     })

@@ -15,7 +15,7 @@ if (major < 9) {
 }
 const http2 = require('http2')
 
-const {AccessTokenRefreshRequest} = require('./core')
+const { AccessTokenRefreshRequest } = require('./core')
 
 const BASE_URL = 'https://avs-alexa-eu.amazon.com'
 const ALEXA_AVS_AVS_CLIENT_ID = 'ALEXA_AVS_AVS_CLIENT_ID'
@@ -23,54 +23,54 @@ const ALEXA_AVS_AVS_CLIENT_SECRET = 'ALEXA_AVS_AVS_CLIENT_SECRET'
 const ALEXA_AVS_AVS_REFRESH_TOKEN = 'ALEXA_AVS_AVS_REFRESH_TOKEN'
 const CONTEXT = [
   {
-    'header': {
-      'namespace': 'SpeechRecognizer',
-      'name': 'RecognizerState'
+    header: {
+      namespace: 'SpeechRecognizer',
+      name: 'RecognizerState'
     },
-    'payload': {
+    payload: {
 
     }
   },
   {
-    'header': {
-      'namespace': 'Speaker',
-      'name': 'VolumeState'
+    header: {
+      namespace: 'Speaker',
+      name: 'VolumeState'
     },
-    'payload': {
-      'volume': 10,
-      'muted': false
+    payload: {
+      volume: 10,
+      muted: false
     }
   },
   {
-    'header': {
-      'namespace': 'Alerts',
-      'name': 'AlertsState'
+    header: {
+      namespace: 'Alerts',
+      name: 'AlertsState'
     },
-    'payload': {
-      'allAlerts': [],
-      'activeAlerts': []
+    payload: {
+      allAlerts: [],
+      activeAlerts: []
     }
   },
   {
-    'header': {
-      'namespace': 'SpeechSynthesizer',
-      'name': 'SpeechState'
+    header: {
+      namespace: 'SpeechSynthesizer',
+      name: 'SpeechState'
     },
-    'payload': {
-      'token': '',
-      'offsetInMilliseconds': 0,
-      'playerActivity': 'FINISHED'
+    payload: {
+      token: '',
+      offsetInMilliseconds: 0,
+      playerActivity: 'FINISHED'
     }
   },
   {
-    'header': {
-      'namespace': 'AudioPlayer',
-      'name': 'PlaybackState'
+    header: {
+      namespace: 'AudioPlayer',
+      name: 'PlaybackState'
     },
-    'payload': {
-      'token': '',
-      'offsetInMilliseconds': 0,
-      'playerActivity': 'IDLE'
+    payload: {
+      token: '',
+      offsetInMilliseconds: 0,
+      playerActivity: 'IDLE'
     }
   }
 ]
@@ -121,7 +121,7 @@ class AVS {
           ':method': 'GET',
           ':scheme': 'https',
           ':path': '/v20160207/directives',
-          'authorization': 'Bearer ' + this.accessToken
+          authorization: 'Bearer ' + this.accessToken
         }
 
         var req = this.client.request(options)
@@ -146,7 +146,7 @@ class AVS {
   UserSays (audio) {
     debug('UserSays called')
     if (debug.enabled) {
-      fs.writeFileSync(path.resolve(this.tempDirectory, `UserSays.wav`), audio)
+      fs.writeFileSync(path.resolve(this.tempDirectory, 'UserSays.wav'), audio)
     }
 
     return new Promise((resolve, reject) => {
@@ -155,17 +155,17 @@ class AVS {
       // so this can be always the same
       var metadata = JSON.stringify(
         {
-          'context': CONTEXT,
-          'event': {
-            'header': {
-              'namespace': 'SpeechRecognizer',
-              'name': 'Recognize',
-              'messageId': uuidv1(),
-              'dialogRequestId': uuidv1()
+          context: CONTEXT,
+          event: {
+            header: {
+              namespace: 'SpeechRecognizer',
+              name: 'Recognize',
+              messageId: uuidv1(),
+              dialogRequestId: uuidv1()
             },
-            'payload': {
-              'profile': 'FAR_FIELD',
-              'format': 'AUDIO_L16_RATE_16000_CHANNELS_1'
+            payload: {
+              profile: 'FAR_FIELD',
+              format: 'AUDIO_L16_RATE_16000_CHANNELS_1'
             }
           }
         })
@@ -186,7 +186,7 @@ class AVS {
         ':method': 'POST',
         ':scheme': 'https',
         ':path': '/v20160207/events',
-        'authorization': `Bearer  ${this.accessToken}`,
+        authorization: `Bearer  ${this.accessToken}`,
         'content-type': 'multipart/form-data; boundary=this-is-my-boundary-for-alexa'
       }
 
@@ -200,9 +200,11 @@ class AVS {
       })
       let outdata
       req.on('data', (chunk) => {
+        console.log('req on data')
         outdata = outdata ? Buffer.concat([outdata, chunk]) : chunk
       })
       req.on('end', () => {
+        console.log('req on end')
         if (outdata && outdata.length) {
           const parsedMessage = httpParser(outdata)
           // log the json part of the message
@@ -258,7 +260,7 @@ class AVS {
           }
           resolve(audioBuffers)
         } else {
-          debug(`UserSays response is empty`)
+          debug('UserSays response is empty')
           resolve()
         }
       })

@@ -20,10 +20,10 @@ const _extractArgs = () => {
     defaultInput: DEFAULT_LANGUAGE_CODE
   })
 
-  result.tts = readlineSync.question('Text to speech provider (a) Amazon Polly or (g) Google Cloud Text to Speech? (a) ', {limit: /(a|g|)/})
+  result.tts = readlineSync.question('Text to speech provider (a) Amazon Polly or (g) Google Cloud Text to Speech? (a) ', { limit: /(a|g|)/ })
   result.tts = result.tts || 'a'
 
-  result.stt = readlineSync.question('Speech to text provider (a) Amazon Transcribe or (g) Google Cloud Speech? (g) ', {limit: /(a|g|)/})
+  result.stt = readlineSync.question('Speech to text provider (a) Amazon Transcribe or (g) Google Cloud Speech? (g) ', { limit: /(a|g|)/ })
   result.stt = result.stt || 'g'
 
   do {
@@ -105,7 +105,7 @@ const _createCapabilities = (args, deviceTokenResponse) => {
 module.exports.execute = async () => {
   // 1) does json already exist?
   if (fs.existsSync(OUTPUT_JSON)) {
-    if (readlineSync.question(`File ${OUTPUT_JSON} already exists. Continue? [Y/n] `, {limit: /(y|n|)/}) === 'n') {
+    if (readlineSync.question(`File ${OUTPUT_JSON} already exists. Continue? [Y/n] `, { limit: /(y|n|)/ }) === 'n') {
       console.log('exiting....')
       return
     }
@@ -118,15 +118,15 @@ module.exports.execute = async () => {
   const deviceTokenResponse = await amazonCore.RefreshTokenAcquireRequest(args.amazonConfig.deviceInfo.clientId, args.amazonConfig.deviceInfo.productId)
 
   // 4) Sending some static capabilities to Amazon. Maybe this must be moved to client lib.
-  console.log(`Amazon Capabilities sending...`)
+  console.log('Amazon Capabilities sending...')
   await amazonCore.SendCapabilities(deviceTokenResponse.access_token)
-  console.log(`Amazon Capabilities sent`)
+  console.log('Amazon Capabilities sent')
 
   // 5) create capabilities.
-  let caps = _createCapabilities(args, deviceTokenResponse)
+  const caps = _createCapabilities(args, deviceTokenResponse)
   const asString = JSON.stringify(caps, null, 2)
   console.log(`Botium Capabilities (to use for copy & paste):\n ${asString}`)
-  if (!fs.existsSync(OUTPUT_JSON) || readlineSync.question(`File ${OUTPUT_JSON} already exists. Overwrite? [y/N] `, {limit: /(y|n|)/}) === 'y') {
+  if (!fs.existsSync(OUTPUT_JSON) || readlineSync.question(`File ${OUTPUT_JSON} already exists. Overwrite? [y/N] `, { limit: /(y|n|)/ }) === 'y') {
     const botiumJsonAsString = JSON.stringify({
       botium: {
         Capabilities: caps
@@ -137,11 +137,11 @@ module.exports.execute = async () => {
   }
 
   // 6) validating capabilities.
-  console.log(`Validating Capabilities`)
-  const connector = new BotiumConnectorAlexaAvs({queueBotSays: () => {}, caps})
+  console.log('Validating Capabilities')
+  const connector = new BotiumConnectorAlexaAvs({ queueBotSays: () => {}, caps })
   try {
     connector.Validate()
-    console.log(`Capabilities are valid`)
+    console.log('Capabilities are valid')
   } catch (error) {
     console.log(error.toString())
   }

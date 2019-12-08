@@ -40,8 +40,8 @@ class GoogleCloudSpeech {
     // Creates a client
     this.client = new speech.SpeechClient({
       credentials: {
-        'private_key': this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY],
-        'client_email': this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL]
+        private_key: this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY],
+        client_email: this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL]
       }
     })
 
@@ -64,10 +64,10 @@ class GoogleCloudSpeech {
     debug('Recognize called')
     return mp3ToWav(audioAsMP3)
       .then((audioAsWav) => {
-        const currentRequest = Object.assign({audio: {content: audioAsWav}}, this.defaultRequest)
+        const currentRequest = Object.assign({ audio: { content: audioAsWav } }, this.defaultRequest)
         const expectedAnswer = this._getExpectedAnswer(conversation, currentStepIndex)
         if (expectedAnswer) {
-          currentRequest.config.speechContexts = [{phrases: expectedAnswer}]
+          currentRequest.config.speechContexts = [{ phrases: expectedAnswer }]
         }
         debug(`Executing STT with args ${util.inspect(currentRequest)}`)
         return this.client.recognize(currentRequest)
@@ -93,11 +93,11 @@ class GoogleCloudSpeech {
 
   _getExpectedAnswer (conversation, currentStepIndex) {
     if (!conversation || !(currentStepIndex >= 0)) {
-      debug(`Expected answer feature is not supported`)
+      debug('Expected answer feature is not supported')
       return null
     }
     if (!this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT]) {
-      debug(`Expected answer turned off`)
+      debug('Expected answer turned off')
       return null
     }
 

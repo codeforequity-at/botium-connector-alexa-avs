@@ -24,16 +24,16 @@ class GoogleCloudTextToSpeech {
     // Creates a client
     this.client = new textToSpeech.TextToSpeechClient({
       credentials: {
-        'private_key': this.caps[Capabilities.ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY],
-        'client_email': this.caps[Capabilities.ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL]
+        private_key: this.caps[Capabilities.ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY],
+        client_email: this.caps[Capabilities.ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL]
       }
     })
 
     this.defaultRequest = {
       // Select the language and SSML Voice Gender (optional)
-      voice: {languageCode: underlineLanguageCode(this.caps[Capabilities.ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE]), ssmlGender: 'NEUTRAL'},
+      voice: { languageCode: underlineLanguageCode(this.caps[Capabilities.ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE]), ssmlGender: 'NEUTRAL' },
       // Select the type of audio encoding
-      audioConfig: {audioEncoding: 'LINEAR16'}
+      audioConfig: { audioEncoding: 'LINEAR16' }
     }
   }
 
@@ -45,7 +45,7 @@ class GoogleCloudTextToSpeech {
   Synthesize (text) {
     debug('Synthesize called')
     return new Promise((resolve, reject) => {
-      this.client.synthesizeSpeech(Object.assign({input: {text}}, this.defaultRequest), (err, response) => {
+      this.client.synthesizeSpeech(Object.assign({ input: { text } }, this.defaultRequest), (err, response) => {
         if (err) {
           return reject(err)
         }

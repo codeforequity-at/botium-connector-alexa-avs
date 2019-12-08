@@ -49,7 +49,7 @@ const _deviceAuthorizationRequest = (clientId, productID) => {
           headers: {
             'content-type': 'application/x-www-form-urlencoded'
           },
-          uri: `https://api.amazon.com/auth/O2/create/codepair`,
+          uri: 'https://api.amazon.com/auth/O2/create/codepair',
           form
         }
     request(requestObject, function (error, response, body) {
@@ -97,7 +97,7 @@ const _deviceTokenRequest = (deviceAuthorizationResponse) => {
         headers: {
           'content-type': 'application/x-www-form-urlencoded'
         },
-        uri: `https://api.amazon.com/auth/O2/token`,
+        uri: 'https://api.amazon.com/auth/O2/token',
         form
       }, function (error, response, body) {
         if (error) {
@@ -136,7 +136,7 @@ const AccessTokenRefreshRequest = (clientId, clientSecret, refreshToken) => {
         headers: {
           'content-type': 'application/x-www-form-urlencoded'
         },
-        uri: `https://api.amazon.com/auth/O2/token?`,
+        uri: 'https://api.amazon.com/auth/O2/token?',
         form
       }, function (error, response, body) {
         if (error) {
@@ -193,17 +193,17 @@ const SendCapabilities = (accessToken, retryDelay = 0.5) => {
     request(
       {
         method: 'PUT',
-        uri: `https://api.amazonalexa.com/v1/devices/@self/capabilities`,
+        uri: 'https://api.amazonalexa.com/v1/devices/@self/capabilities',
         headers: {
-          'authorization': `Bearer ${accessToken}`
+          authorization: `Bearer ${accessToken}`
         },
         body: {
           envelopeVersion: '20160207',
           capabilities: [
             {
-              'type': 'AlexaInterface',
-              'interface': 'SpeechRecognizer',
-              'version': '2.0'
+              type: 'AlexaInterface',
+              interface: 'SpeechRecognizer',
+              version: '2.0'
             }
           ]
         },
