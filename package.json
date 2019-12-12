@@ -47,6 +47,7 @@
     "aws-sdk": "^2.585.0",
     "debug": "^4.1.1",
     "escape-json-node": "^2.0.0",
+    "form-data": "^3.0.0",
     "getmac": "^4.3.0",
     "http-message-parser": "0.0.34",
     "is-mp3": "^1.1.3",

@@ -138,7 +138,7 @@ module.exports.execute = async () => {
 
   // 6) validating capabilities.
   console.log('Validating Capabilities')
-  const connector = new BotiumConnectorAlexaAvs({ queueBotSays: () => {}, caps })
+  const connector = new BotiumConnectorAlexaAvs({ container: {}, queueBotSays: () => {}, caps })
   try {
     connector.Validate()
     console.log('Capabilities are valid')
