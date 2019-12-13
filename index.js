@@ -8,8 +8,8 @@ const Capabilities = {
 }
 
 const Defaults = {
-  [Capabilities.ALEXA_AVS_TTS]: 'GOOGLE_CLOUD_TEXT_TO_SPEECH',
-  [Capabilities.ALEXA_AVS_STT]: 'GOOGLE_CLOUD_SPEECH'
+  [Capabilities.ALEXA_AVS_TTS]: 'BOTIUM_SPEECH_PROCESSING',
+  [Capabilities.ALEXA_AVS_STT]: 'BOTIUM_SPEECH_PROCESSING'
 }
 
 class BotiumConnectorAlexaAvs {
@@ -25,10 +25,10 @@ class BotiumConnectorAlexaAvs {
     if (!this.caps[Capabilities.ALEXA_AVS_STT]) this.caps[Capabilities.ALEXA_AVS_STT] = Defaults[Capabilities.ALEXA_AVS_STT]
 
     this.tts = new (require('./src/tts/' + _toModuleName(this.caps[Capabilities.ALEXA_AVS_TTS])))(this.caps, this.container.tempDirectory)
-    this.tts.Validate()
+    this.tts.Validate && this.tts.Validate()
 
     this.stt = new (require('./src/stt/' + _toModuleName(this.caps[Capabilities.ALEXA_AVS_STT])))(this.caps, this.container.tempDirectory)
-    this.stt.Validate()
+    this.stt.Validate && this.stt.Validate()
 
     this.avs = new (require('./src/avs/AVSSpeechClient')).AVS(this.caps, this.container.tempDirectory)
     this.avs.Validate()
@@ -36,16 +36,18 @@ class BotiumConnectorAlexaAvs {
     return Promise.resolve()
   }
 
-  Build () {
+  async Build () {
     debug('Build called')
-
-    return Promise.all([this.tts.Build(), this.stt.Build(), this.avs.Build()])
+    if (this.tts.Build) await this.tts.Build()
+    if (this.stt.Build) await this.stt.Build()
+    await this.avs.Build()
   }
 
-  Start () {
+  async Start () {
     debug('Start called')
-
-    return Promise.all([this.tts.Start(), this.stt.Start(), this.avs.Start()])
+    if (this.tts.Start) await this.tts.Start()
+    if (this.stt.Start) await this.stt.Start()
+    await this.avs.Start()
   }
 
   UserSays (mockMsg) {
@@ -89,6 +91,8 @@ class BotiumConnectorAlexaAvs {
       let processingPromise = Promise.resolve()
       audioBuffers.forEach((audioBuffer, index) => {
         processingPromise = processingPromise.then(() => {
+          if (!this.stt) return
+
           debug(`Answer converting to text, format "${audioBuffer.format}", size ${audioBuffer.payload.length}...`)
           return this.stt.Recognize(audioBuffer.payload, conversation, currentStepIndex)
             .then((botAsText) => {
@@ -127,28 +131,23 @@ class BotiumConnectorAlexaAvs {
     }
   }
 
-  Stop () {
+  async Stop () {
     debug('Stop called')
-
-    this.tts.Stop()
-    this.stt.Stop()
-    this.avs.Stop()
-
-    return Promise.resolve()
+    if (this.tts.Stop) await this.tts.Stop()
+    if (this.stt.Stop) await this.stt.Stop()
+    await this.avs.Stop()
   }
 
-  Clean () {
+  async Clean () {
     debug('Clean called')
 
-    this.tts.Clean()
-    this.stt.Clean()
-    this.avs.Clean()
+    if (this.tts.Clean) await this.tts.Clean()
+    if (this.stt.Clean) await this.stt.Clean()
+    await this.avs.Clean()
 
     this.tts = null
     this.stt = null
     this.avs = null
-
-    return Promise.resolve()
   }
 }
 

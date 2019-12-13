@@ -37,11 +37,6 @@ class GoogleCloudTextToSpeech {
     }
   }
 
-  Start () {
-    debug('Start called')
-    return Promise.resolve()
-  }
-
   Synthesize (text) {
     debug('Synthesize called')
     return new Promise((resolve, reject) => {
@@ -53,10 +48,6 @@ class GoogleCloudTextToSpeech {
         return resolve(response.audioContent)
       })
     })
-  }
-
-  Stop () {
-    return Promise.resolve()
   }
 
   Clean () {

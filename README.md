@@ -32,7 +32,7 @@ It can be used as any other Botium connector with all Botium Stack components:
 The Alexa skill to test doesn't have to be published - it can be tested while still in "development mode", making this connector the perfect choice for __Continuous Testing in CI Pipelines__.
 
 ## Requirements
-For Text-To-Speech and Speech-To-Text, this connector currently supports cloud services by Amazon and Google. You only have to configure one of them.
+For Text-To-Speech and Speech-To-Text, this connector currently supports [Botium Speech Processing](https://github.com/codeforequity-at/botium-speech-processing) as well as cloud services by Amazon and Google. You only have to configure one of them.
 
 ### Node.js v10
 Node.js v8 required, but Node.js v10 recommended because Http2 module of Node.js (AVS uses HTTP2) 
@@ -46,6 +46,10 @@ Depending on your Linux distribution:
     > sudo apt-get install libasound2-dev
 
 _See [here](https://github.com/TooTallNate/node-speaker) for more info._
+
+### Botium Speech Processing
+
+Please see  [Botium Speech Processing repository](https://github.com/codeforequity-at/botium-speech-processing) for installation instructions.
 
 ### Google Cloud Text-to-Speech API
 1.  [Select or create](https://console.cloud.google.com/project) a Cloud Platform project
@@ -173,55 +177,64 @@ The simpliest way to acquire it, is the initialization tool described above
 Language setting for Alexa. Example: en_US
 
 ### ALEXA_AVS_TTS
-GOOGLE_CLOUD_TEXT_TO_SPEECH or AMAZON_POLLY
+_Default: BOTIUM_SPEECH_PROCESSING_
 
-### ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY
+BOTIUM_SPEECH_PROCESSING or GOOGLE_CLOUD_TEXT_TO_SPEECH or AMAZON_POLLY
+
+### Capabilities for Botium Speech Processing
+
+### ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_URL
+Botium Speech Processing server url
+
+### ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_APIKEY
+Botium Speech Processing API Key (optional)
+
+### ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_LANGUAGE
+Botium Speech Processing language
+
+### Capabilities for Google Cloud Text To Speech
+
+#### ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY
 See json downloaded from Google
 
-### ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL
+#### ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL
 See json downloaded from Google
 
-### ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE
+#### ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE
 Language setting for Google. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE
 
-### ALEXA_AVS_TTS_AMAZON_POLLY_REGION
+### Capabilities for Amazon Polly
+
+#### ALEXA_AVS_TTS_AMAZON_POLLY_REGION
 Amazon region. Any region can be used which supports Amazon Polly
 
-### ALEXA_AVS_TTS_AMAZON_POLLY_ACCESS_KEY_ID
+#### ALEXA_AVS_TTS_AMAZON_POLLY_ACCESS_KEY_ID
 See json downloaded from Amazon
 
-### ALEXA_AVS_TTS_AMAZON_POLLY_SECRET_ACCESS_KEY
+#### ALEXA_AVS_TTS_AMAZON_POLLY_SECRET_ACCESS_KEY
 See json downloaded from Amazon
 
-### ALEXA_AVS_TTS_AMAZON_POLLY_LANGUAGE_CODE
+#### ALEXA_AVS_TTS_AMAZON_POLLY_LANGUAGE_CODE
 Language setting for Amazon. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE
 
 ### ALEXA_AVS_STT
-GOOGLE_CLOUD_SPEECH or AMAZON_TRANSCRIBE
+_Default: BOTIUM_SPEECH_PROCESSING_
 
-### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY
+BOTIUM_SPEECH_PROCESSING or GOOGLE_CLOUD_SPEECH or AMAZON_TRANSCRIBE
+
+### Capabilities for Botium Speech Processing
+see above
+
+### Capabilities for Google Cloud Speech
+
+#### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY
 See json downloaded from Google. Same as ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY if they sharing the same project
 
-### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL
+#### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL
 See json downloaded from Google. Same as ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL if they sharing the same project
 
-### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE
+#### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE
 Language setting for Goolge. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE and ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE
-
-### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_REGION
-Amazon region. Any region can be used which supports Amazon Polly
-
-### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID
-See json downloaded from Amazon
-
-### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY
-See json downloaded from Amazon
-
-### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_LANGUAGE_CODE
-Language setting for Amazon. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE
-
-### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME
-The name of an existing S3 bucket
 
 ### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT
 _Default: true_
@@ -246,6 +259,23 @@ hi!
 ``` 
 
 Then it will be send as expected answer to Google STT, expect this flag is false.
+
+### Capabilities for Amazon Transcribe
+
+#### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_REGION
+Amazon region. Any region can be used which supports Amazon Polly
+
+#### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID
+See json downloaded from Amazon
+
+#### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY
+See json downloaded from Amazon
+
+#### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_LANGUAGE_CODE
+Language setting for Amazon. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE
+
+#### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME
+The name of an existing S3 bucket
 
 ## Open Issues and Restrictions
 * If a text is very long (more thousand), then connector dies because AVS error. Long messages should be sent in chunks.
