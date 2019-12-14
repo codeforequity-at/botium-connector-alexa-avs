@@ -86,7 +86,7 @@ _Amazon Transcribe only worked for **english language** in our tests_
 
 ### Amazon AVS API of the Product to test
 
-In your Amazon account, you have to register a virtual Alexa device and enable [_code-based linking](https://developer.amazon.com/de-DE/docs/alexa/alexa-voice-service/code-based-linking-other-platforms.html).
+In your Amazon account, you have to register a virtual Alexa device and enable [code-based linking](https://developer.amazon.com/de-DE/docs/alexa/alexa-voice-service/code-based-linking-other-platforms.html).
 
 1. Follow [**Step 1: Enable CBL**](https://developer.amazon.com/de/docs/alexa-voice-service/code-based-linking-other-platforms.html#step1)
 2. **note your "Client ID", the "Client secret" and your "Product ID", you will need it later**
