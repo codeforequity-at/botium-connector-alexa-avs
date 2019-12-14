@@ -1,15 +1,14 @@
 {
   "name": "botium-connector-alexa-avs",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Botium Connector for Alexa with AVS",
-  "main": "dist/botium-connector-alexa-avs-cjs.js",
-  "module": "dist/botium-connector-alexa-avs-es.js",
+  "main": "index.js",
   "bin": {
     "botium-connector-alexa-avs-init": "./src/tools/CreateCapabilities.js"
   },
   "scripts": {
     "create-capabilities": "node src/tools/CreateCapabilities.js",
-    "build": "npm run eslint && rollup -c",
+    "build": "npm run eslint",
     "eslint": "eslint index.js src/**/*.js"
   },
   "repository": {
