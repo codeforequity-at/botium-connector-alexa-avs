@@ -11,18 +11,19 @@ This is a [Botium](https://github.com/codeforequity-at/botium-core) connector fo
 __Did you read the [Botium in a Nutshell](https://medium.com/@floriantreml/botium-in-a-nutshell-part-1-overview-f8d0ceaf8fb4) articles ? Be warned, without prior knowledge of Botium you won't be able to properly use this library!__
 
 ## How it works ?
-This connector is not bound to any Alexa Skill. Works as a normal Alexa device. So you have to activate your Alexa skill with its activation utterance.  
+A virtual Alexa device is registered to be used in testing, and it Works the same ways as a physical Alexa device. It is not bound to any Alexa Skill, so you have to activate your Alexa skill with its activation utterance.
 
 The steps for Botium to run a conversation with an Alexa skill are:
 
-* Converts text to speech ([Botium Speech Processing](https://github.com/codeforequity-at/botium-speech-processing), [Cloud Speech-to-Text API](https://cloud.google.com/text-to-speech/) or [Amazon Polly](https://aws.amazon.com/polly))
+* Converts [BotiumScript text](https://botium.atlassian.net/wiki/spaces/BOTIUM/pages/491664/Botium+Scripting+-+BotiumScript) to speech ([Botium Speech Processing](https://github.com/codeforequity-at/botium-speech-processing), [Cloud Speech-to-Text API](https://cloud.google.com/text-to-speech/) or [Amazon Polly](https://aws.amazon.com/polly))
 * Asks Alexa with [Amazon AVS](https://developer.amazon.com/de/docs/alexa-voice-service/get-started-with-alexa-voice-service.html)
 * Converts answer to text ([Botium Speech Processing](https://github.com/codeforequity-at/botium-speech-processing), [Cloud Text-to-Speech API, aka Cloud Speech API](https://cloud.google.com/speech-to-text/) or [Amazon Transcribe](https://aws.amazon.com/transcribe/))
+* Makes [BotiumScript assertions](https://botium.atlassian.net/wiki/spaces/BOTIUM/pages/491664/Botium+Scripting+-+BotiumScript)
 
-TTS and STT can translate wrong. And so the test will fail, even if Alexa works well.
-Google STT handles this problem more sophisticated. See ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT Capability.
+_**Warning 1**: TTS and STT can translate wrong. And so the test will fail, even if Alexa works well.
+Google STT handles this problem more sophisticated. See ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT Capability. Another option is to use a homophones list to translate utterances always recognized wrong ("let us" vs "lettuce" ...), see ALEXA_AVS_STT_HOMOPHONES capability below._
 
-Please check the pricing of the choosen APIs.
+_**Warning 2**: When using the cloud-based APIs, there are costs involved.Please check the pricing of the choosen cloud APIs._
 
 It can be used as any other Botium connector with all Botium Stack components:
 * [Botium CLI](https://github.com/codeforequity-at/botium-cli/)
@@ -55,7 +56,8 @@ Please see  [Botium Speech Processing repository](https://github.com/codeforequi
 1.  [Select or create](https://console.cloud.google.com/project) a Cloud Platform project
 2.  [Enable billing](https://support.google.com/cloud/answer/6293499#enable-billing) for your project (free tier available).
 3.  [Enable](https://console.cloud.google.com/flows/enableapi?apiid=texttospeech.googleapis.com) the Google Cloud Text-to-Speech API.
-4.  [Set up authentication with a service account](https://cloud.google.com/docs/authentication/getting-started) so you can access the API from your local workstation. You will need the JSON credentials file later.
+4.  [Set up authentication with a service account](https://cloud.google.com/docs/authentication/getting-started) so you can access the API from your local workstation. 
+5. **Save the JSON credentials file, you will need it later.**
 
 ### Google Cloud Speech-to-Text API
 * Same steps as in Google Cloud Text-to-Speech API, just other API
@@ -67,7 +69,7 @@ Please see  [Botium Speech Processing repository](https://github.com/codeforequi
 In short:
 * [Create an IAM user](https://console.aws.amazon.com/iam/) (see [here](https://docs.aws.amazon.com/de_de/IAM/latest/UserGuide/id_users_create.html) for help)
   * Important: choose _Programmatic access_ as access type
-  * Note access key and secret, you need it later
+  * **Note access key and secret, you will need it later**
 * Choose _Attach existing policies to user directly_ to give permissions _AmazonPollyFullAccess_
   * Feel free to use finer grained policies if you know what you are doing
 
@@ -83,7 +85,11 @@ _Amazon Transcribe only worked for **english language** in our tests_
   * Feel free to use finer grained policies if you know what you are doing
 
 ### Amazon AVS API of the Product to test
-[Steps to setup](https://developer.amazon.com/de/docs/alexa-voice-service/code-based-linking-other-platforms.html#step1) - follow "Step 1: Enable CBL" and note your "Client ID", the "Client secret" and your "Product ID".
+
+In your Amazon account, you have to register a virtual Alexa device and enable [_code-based linking](https://developer.amazon.com/de-DE/docs/alexa/alexa-voice-service/code-based-linking-other-platforms.html).
+
+1. Follow [**Step 1: Enable CBL**](https://developer.amazon.com/de/docs/alexa-voice-service/code-based-linking-other-platforms.html#step1)
+2. **note your "Client ID", the "Client secret" and your "Product ID", you will need it later**
 
 ## Preparing Botium Capabilities
 
@@ -91,13 +97,13 @@ The connector repository includes a tool to compose the Botium capabilities (inc
 
 ### 1. Prepare amazonConfig.json
 
-If you use Botium Box, then this step is optional. You can use the created amazonConfig.json in Botium Box, or you can set the values (AVS Product ID, Client ID...) direct in Botium Box.
+_Note: If you use Botium Box, then this step is optional. You can import the created amazonConfig.json in Botium Box, or you enter the values (AVS Product ID, Client ID...) in the Botium Box connector wizard._
 
-* Copy AVS Product ID, Client ID and Client secret from steps above (Amazon AVS API of the Product to test) to a file named amazonConfig.json (see sample in cfg folder of this repository):
-* Just Amazon Transcibe / Amazon Polly:
+* Copy **AVS "Client ID", the "Client secret" and your "Product ID"** from steps above (Amazon AVS API of the Product to test) to a file named amazonConfig.json (see sample in cfg folder of this repository):
+* When using Amazon Transcibe / Amazon Polly:
     * Set region you want to use (Be aware, a region has not all APIs. For example eu-west-1 has Polly, Transcribe, and S3 too)
     * Copy AVS Access Key ID, and Secret Access Key from steps above  (Amazon Polly, Amazon Transcribe)
-* Just Amazon Transcibe
+* When using Amazon Transcibe
     * Create a bucket in S3, or use an existing one. 
 
 ```
@@ -171,6 +177,35 @@ The simpliest way to acquire it, is the initialization tool described above
 
 ### ALEXA_AVS_AVS_LANGUAGE_CODE
 Language setting for Alexa. Example: en_US
+
+### ALEXA_AVS_STT_HOMOPHONES
+This connector uses speech recognition for turning the output speech coming back from Alexa into text. This process is not perfect, even with the best STT engines available - to compensate for this, homophones can be specified for errors that occur when a reply from Alexa is misunderstood. The text will be replaced in actual responses from the virtual Alexa device.
+
+Homophones lists can be specified as JSON lists or as CSV, embedded in botium.json or as an external file.
+
+**Specify in botium.json**
+```
+  "ALEXA_AVS_STT_HOMOPHONES": {
+    "lettuce": ["let us"],
+    "fairy": ["ferry", "fair I"]
+  }
+```
+
+**Specify in botium.json as CSV text**
+```
+  "ALEXA_AVS_STT_HOMOPHONES": "lettuce,let us\r\nfairy,ferry,fair I"
+```
+
+**Point to homophones file in botium.json**
+```
+  "ALEXA_AVS_STT_HOMOPHONES": "./homophones.txt"
+```
+_homophones.txt:_
+```
+lettuce,let us
+fairy,ferry,fair I
+```
+
 
 ### ALEXA_AVS_TTS
 _Default: BOTIUM_SPEECH_PROCESSING_

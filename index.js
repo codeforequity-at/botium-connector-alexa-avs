@@ -2,9 +2,12 @@ const util = require('util')
 const debug = require('debug')('botium-connector-alexa-avs-main')
 const _ = require('lodash')
 
+const { loadHomophones, replaceHomophones } = require('./src/utils/homophones')
+
 const Capabilities = {
   ALEXA_AVS_TTS: 'ALEXA_AVS_TTS',
-  ALEXA_AVS_STT: 'ALEXA_AVS_STT'
+  ALEXA_AVS_STT: 'ALEXA_AVS_STT',
+  ALEXA_AVS_STT_HOMOPHONES: 'ALEXA_AVS_STT_HOMOPHONES'
 }
 
 const Defaults = {
@@ -38,6 +41,7 @@ class BotiumConnectorAlexaAvs {
 
   async Build () {
     debug('Build called')
+    this.homophones = loadHomophones(this.caps[Capabilities.ALEXA_AVS_STT_HOMOPHONES])
     if (this.tts.Build) await this.tts.Build()
     if (this.stt.Build) await this.stt.Build()
     await this.avs.Build()
@@ -50,84 +54,76 @@ class BotiumConnectorAlexaAvs {
     await this.avs.Start()
   }
 
-  UserSays (mockMsg) {
+  async UserSays (mockMsg) {
     const { messageText, currentStepIndex } = mockMsg
     debug(`UserSays called: ${messageText}`)
 
     if (!mockMsg.attachments) {
       mockMsg.attachments = []
     }
-
-    return new Promise((resolve, reject) => {
+    try {
       debug(`User text "${messageText}" converting to speech...`)
-      this.tts.Synthesize(messageText)
-        .then((userAsSpeech) => {
-          debug(`User text "${messageText}" conversion to speech succeeded`)
-          mockMsg.attachments.push({
-            name: `alexa-avs-request-${currentStepIndex}.wav`,
-            mimeType: 'audio/wav',
-            base64: userAsSpeech.toString('base64')
-          })
-          debug('Alexa answering...')
-          return this.avs.UserSays(userAsSpeech)
-        })
-        .then((audioBuffers) => {
-          debug('Alexa answered successfull')
-          resolve()
-
-          setTimeout(() => this._processResponse(audioBuffers, mockMsg), 0)
-        })
-        .catch(err => {
-          debug(`AVS.UserSays failed: ${err.message}`)
-          reject(err)
-        })
-    })
+      const userAsSpeech = await this.tts.Synthesize(messageText)
+      debug(`User text "${messageText}" conversion to speech succeeded`)
+      mockMsg.attachments.push({
+        name: `alexa-avs-request-${currentStepIndex}.wav`,
+        mimeType: 'audio/wav',
+        base64: userAsSpeech.toString('base64')
+      })
+      debug('Alexa answering...')
+      const audioBuffers = await this.avs.UserSays(userAsSpeech)
+      debug('Alexa answered successfull')
+      setTimeout(() => this._processResponse(audioBuffers, mockMsg), 0)
+    } catch (err) {
+      debug(`AVS.UserSays failed: ${err.message}`)
+      throw err
+    }
   }
 
-  _processResponse (audioBuffers, mockMsg) {
+  async _processResponse (audioBuffers, mockMsg) {
     const { conversation, currentStepIndex } = mockMsg
 
     if (audioBuffers && audioBuffers.length > 0) {
-      let processingPromise = Promise.resolve()
-      audioBuffers.forEach((audioBuffer, index) => {
-        processingPromise = processingPromise.then(() => {
-          if (!this.stt) return
+      for (const [index, audioBuffer] of audioBuffers.entries()) {
+        if (!this.stt) return
 
+        try {
           debug(`Answer converting to text, format "${audioBuffer.format}", size ${audioBuffer.payload.length}...`)
-          return this.stt.Recognize(audioBuffer.payload, conversation, currentStepIndex)
-            .then((botAsText) => {
-              if (botAsText) {
-                debug(`Answer converted to text "${botAsText}" succeeded`)
-              } else {
-                debug('Answer converted to empty text')
+          let botAsText = await this.stt.Recognize(audioBuffer.payload, conversation, currentStepIndex)
+          if (botAsText) {
+            debug(`Answer converted to text succeeded: ${botAsText}`)
+            const replaced = replaceHomophones(this.homophones, botAsText)
+            if (botAsText !== replaced) {
+              debug(`Replaced homophones in text, translated to: ${botAsText}`)
+              botAsText = replaced
+            }
+          } else {
+            debug('Answer converted to empty text')
+          }
+
+          const botMsg = {
+            sender: 'bot',
+            messageText: botAsText || '',
+            sourceData: {
+              audioBuffer: {
+                format: audioBuffer.format,
+                length: audioBuffer.payload.length
               }
-              const botMsg = {
-                sender: 'bot',
-                messageText: botAsText || '',
-                sourceData: {
-                  audioBuffer: {
-                    format: audioBuffer.format,
-                    length: audioBuffer.payload.length
-                  }
-                },
-                attachments: [
-                  {
-                    name: `alexa-avs-response-${index}.mp3`,
-                    mimeType: 'audio/mpeg3',
-                    base64: audioBuffer.payload.toString('base64')
-                  }
-                ]
+            },
+            attachments: [
+              {
+                name: `alexa-avs-response-${index}.mp3`,
+                mimeType: 'audio/mpeg3',
+                base64: audioBuffer.payload.toString('base64')
               }
-              this.queueBotSays(botMsg)
-            })
-            .catch(err => {
-              debug(`Answer conversion failed, format "${audioBuffer.format}", size ${audioBuffer.payload.length}: ${util.inspect(err)}`)
-            })
-        })
-      })
-      processingPromise.then(() => {
-        debug(`Answer handling ready, processed ${audioBuffers.length} audio responses.`)
-      })
+            ]
+          }
+          this.queueBotSays(botMsg)
+        } catch (err) {
+          debug(`Answer conversion failed, format "${audioBuffer.format}", size ${audioBuffer.payload.length}: ${util.inspect(err)}`)
+        }
+      }
+      debug(`Answer handling ready, processed ${audioBuffers.length} audio responses.`)
     }
   }
 
@@ -145,6 +141,7 @@ class BotiumConnectorAlexaAvs {
     if (this.stt.Clean) await this.stt.Clean()
     await this.avs.Clean()
 
+    this.homophones = null
     this.tts = null
     this.stt = null
     this.avs = null
