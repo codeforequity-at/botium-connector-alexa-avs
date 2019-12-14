@@ -55,11 +55,6 @@ class GoogleCloudSpeech {
     }
   }
 
-  Start () {
-    debug('Start called')
-    return Promise.resolve()
-  }
-
   Recognize (audioAsMP3, conversation, currentStepIndex) {
     debug('Recognize called')
     return mp3ToWav(audioAsMP3)
@@ -79,10 +74,6 @@ class GoogleCloudSpeech {
           .join('\n')
         return transcription
       })
-  }
-
-  Stop () {
-    return Promise.resolve()
   }
 
   Clean () {

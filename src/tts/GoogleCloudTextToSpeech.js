@@ -33,13 +33,8 @@ class GoogleCloudTextToSpeech {
       // Select the language and SSML Voice Gender (optional)
       voice: { languageCode: underlineLanguageCode(this.caps[Capabilities.ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE]), ssmlGender: 'NEUTRAL' },
       // Select the type of audio encoding
-      audioConfig: { audioEncoding: 'LINEAR16' }
+      audioConfig: { audioEncoding: 'LINEAR16', sampleRateHertz: 16000 }
     }
-  }
-
-  Start () {
-    debug('Start called')
-    return Promise.resolve()
   }
 
   Synthesize (text) {
@@ -53,10 +48,6 @@ class GoogleCloudTextToSpeech {
         return resolve(response.audioContent)
       })
     })
-  }
-
-  Stop () {
-    return Promise.resolve()
   }
 
   Clean () {

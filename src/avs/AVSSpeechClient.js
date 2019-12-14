@@ -1,7 +1,7 @@
 const util = require('util')
 const fs = require('fs')
 const path = require('path')
-const httpParser = require('http-message-parser')
+const FormData = require('form-data')
 const debug = require('debug')('botium-connector-alexa-avs-avs')
 const uuidv1 = require('uuid/v1')
 const currentVersion = require('node-version')
@@ -16,8 +16,10 @@ if (major < 9) {
 const http2 = require('http2')
 
 const { AccessTokenRefreshRequest } = require('./core')
+const { postForm } = require('../utils/http2')
 
-const BASE_URL = 'https://avs-alexa-eu.amazon.com'
+const BASE_URL_DEFAULT = 'https://alexa.eu.gateway.devices.a2z.com'
+const ALEXA_AVS_AVS_BASE_URL = 'ALEXA_AVS_AVS_BASE_URL'
 const ALEXA_AVS_AVS_CLIENT_ID = 'ALEXA_AVS_AVS_CLIENT_ID'
 const ALEXA_AVS_AVS_CLIENT_SECRET = 'ALEXA_AVS_AVS_CLIENT_SECRET'
 const ALEXA_AVS_AVS_REFRESH_TOKEN = 'ALEXA_AVS_AVS_REFRESH_TOKEN'
@@ -76,6 +78,7 @@ const CONTEXT = [
 ]
 
 const Capabilities = {
+  ALEXA_AVS_AVS_BASE_URL,
   ALEXA_AVS_AVS_CLIENT_ID,
   ALEXA_AVS_AVS_CLIENT_SECRET,
   ALEXA_AVS_AVS_REFRESH_TOKEN,
@@ -102,40 +105,41 @@ class AVS {
     debug('Build called')
     // 1) acquiring access token from refresh token
     return AccessTokenRefreshRequest(this.caps[Capabilities.ALEXA_AVS_AVS_CLIENT_ID], this.caps[Capabilities.ALEXA_AVS_AVS_CLIENT_SECRET], this.caps[Capabilities.ALEXA_AVS_AVS_REFRESH_TOKEN])
-      .then((result) => {
+      .then((result) => new Promise((resolve, reject) => {
         debug('Access token acquired')
         this.accessToken = result.access_token
 
         // 2) creating avs client
-        this.client = http2.connect(BASE_URL)
-        this.client.on('error', (err) => console.error(`Client Error ${err}`))
-        this.client.on('socketError', (err) => console.error(`Client Socket Error ${err}`))
-        this.client.on('goaway', (err) => console.error(`Client GoAway ${err}`))
-        this.client.on('response', (headers, flags) => console.log('Client response'))
-        this.client.on('data', (chunk) => console.log('Client data'))
-        this.client.on('end', (chunk) => console.log('Client end'))
+        this.client = http2.connect(this.caps[Capabilities.ALEXA_AVS_AVS_BASE_URL] || BASE_URL_DEFAULT)
+        this.client.on('error', (err) => debug(`Client Error ${err}`))
+        this.client.on('socketError', (err) => debug(`Client Socket Error ${err}`))
+        this.client.on('goaway', (err) => debug(`Client GoAway ${err}`))
+        this.client.on('response', (headers, flags) => debug(`Client response: ${JSON.stringify(headers, null, 2)}`))
+        this.client.on('data', (chunk) => debug('Client data'))
+        this.client.on('end', (chunk) => debug('Client end'))
         debug('AVS http2-client created')
 
         // 3) creating downchannel
-        const options = {
+        const requestOptions = {
           ':method': 'GET',
           ':scheme': 'https',
           ':path': '/v20160207/directives',
           authorization: 'Bearer ' + this.accessToken
         }
+        debug(`Downchannel created ${util.inspect(requestOptions)}`)
 
-        var req = this.client.request(options)
-        req.on('error', (e) => console.error(`Downchannel error ${e}`))
-        req.on('socketError', (e) => console.error(`Downchannel socket error ${e}`))
-        req.on('goaway', (e) => console.error(`Downchannel goaway ${e}`))
+        var req = this.client.request(requestOptions)
+        req.on('error', (e) => debug(`Downchannel error ${e}`))
+        req.on('socketError', (e) => debug(`Downchannel socket error ${e}`))
+        req.on('goaway', (e) => debug(`Downchannel goaway ${e}`))
         req.on('response', (headers, flags) => {
           debug(`Downchannel create status: ${JSON.stringify(headers, null, 2)}`)
+          resolve()
         })
         req.on('data', (chunk) => debug(`Downchannel data received ${chunk}`))
         req.on('end', () => debug('Downchannel closed'))
         req.end()
-        debug(`Downchannel created ${util.inspect(options)}`)
-      })
+      }))
   }
 
   Start () {
@@ -143,131 +147,97 @@ class AVS {
     return Promise.resolve()
   }
 
-  UserSays (audio) {
+  async UserSays (audio) {
     debug('UserSays called')
     if (debug.enabled) {
       fs.writeFileSync(path.resolve(this.tempDirectory, 'UserSays.wav'), audio)
     }
 
-    return new Promise((resolve, reject) => {
-      // data for synchronizing state.
-      // we have stateless client,
-      // so this can be always the same
-      var metadata = JSON.stringify(
-        {
-          context: CONTEXT,
-          event: {
-            header: {
-              namespace: 'SpeechRecognizer',
-              name: 'Recognize',
-              messageId: uuidv1(),
-              dialogRequestId: uuidv1()
-            },
-            payload: {
-              profile: 'FAR_FIELD',
-              format: 'AUDIO_L16_RATE_16000_CHANNELS_1'
-            }
+    const metadata = JSON.stringify(
+      {
+        context: CONTEXT,
+        event: {
+          header: {
+            namespace: 'SpeechRecognizer',
+            name: 'Recognize',
+            messageId: uuidv1(),
+            dialogRequestId: uuidv1()
+          },
+          payload: {
+            profile: 'FAR_FIELD',
+            format: 'AUDIO_L16_RATE_16000_CHANNELS_1'
           }
-        })
-      var data = '--this-is-my-boundary-for-alexa\r\n'
-      data += 'Content-Disposition: form-data; name="metadata"\r\n'
-      data += 'Content-Type: application/json; charset=UTF-8\r\n\r\n'
-      data += metadata
-      data += '\r\n'
-      data += '--this-is-my-boundary-for-alexa\r\n'
-      data += 'Content-Disposition: form-data; name="audio"\r\n'
-      data += 'Content-Type:application/octet-stream\r\n\r\n'
-      var payload = Buffer.concat([
-        Buffer.from(data, 'utf8'),
-        audio,
-        Buffer.from('\r\n--this-is-my-boundary-for-alexa\r\n', 'utf8')
-      ])
-      var request = {
-        ':method': 'POST',
-        ':scheme': 'https',
-        ':path': '/v20160207/events',
-        authorization: `Bearer  ${this.accessToken}`,
-        'content-type': 'multipart/form-data; boundary=this-is-my-boundary-for-alexa'
-      }
-
-      debug(`UserSays request ${JSON.stringify(request, null, 2)}`)
-      var req = this.client.request(request)
-      req.on('error', (e) => {
-        return reject(e)
-      })
-      req.on('socketError', (e) => {
-        return reject(e)
-      })
-      let outdata
-      req.on('data', (chunk) => {
-        console.log('req on data')
-        outdata = outdata ? Buffer.concat([outdata, chunk]) : chunk
-      })
-      req.on('end', () => {
-        console.log('req on end')
-        if (outdata && outdata.length) {
-          const parsedMessage = httpParser(outdata)
-          // log the json part of the message
-          if (debug.enabled) {
-            for (var multipartIndex in parsedMessage.multipart) {
-              const part = parsedMessage.multipart[multipartIndex]
-              debug(`UserSays response, multipart ${multipartIndex}: ${util.inspect(part)}`)
-              if (part.headers['Content-Type'] && part.headers['Content-Type'].indexOf('application/json') === 0) {
-                debug(`UserSays response, multipart ${multipartIndex} Body: ${part.body.toString('utf8')}`)
-              }
-            }
-          }
-
-          const contentPayload = parsedMessage.multipart.reduce((acc, part) => {
-            if (part.headers && part.headers['Content-ID']) {
-              debug(`Found Content Payload with CID ${part.headers['Content-ID']}`)
-              acc[part.headers['Content-ID']] = part.body
-            }
-            return acc
-          }, {})
-
-          const directivePayload = parsedMessage.multipart.reduce((acc, part) => {
-            if (part.headers && part.headers['Content-Type'].indexOf('application/json') === 0) {
-              debug(`Found JSON Payload of type ${part.headers['Content-Type']}`)
-              const partJson = JSON.parse(part.body.toString('utf8'))
-              if (partJson.directive) {
-                acc.push(partJson.directive)
-              }
-            }
-            return acc
-          }, [])
-
-          const audioBuffers = []
-          directivePayload.forEach(directive => {
-            if (directive.header && directive.header.namespace === 'SpeechSynthesizer' && directive.header.name === 'Speak') {
-              debug(`Found SpeechSynthesizer/Speak directive ${util.inspect(directive)}`)
-              if (directive.payload.url.indexOf('cid:') === 0) {
-                const lookupContentId = `<${directive.payload.url.substr(4)}>`
-                if (contentPayload[lookupContentId]) {
-                  audioBuffers.push({ format: directive.payload.format, payload: contentPayload[lookupContentId] })
-                } else {
-                  throw new Error(`Directive payload ${lookupContentId} not found in response.`)
-                }
-              } else {
-                throw new Error(`Directive payload url ${directive.payload.url} not supported.`)
-              }
-            }
-          })
-          if (audioBuffers && audioBuffers.length > 0 && debug.enabled) {
-            audioBuffers.forEach((ab, index) => {
-              fs.writeFileSync(path.resolve(this.tempDirectory, `AlexaSaid${index}.mp3`), ab.payload)
-            })
-          }
-          resolve(audioBuffers)
-        } else {
-          debug('UserSays response is empty')
-          resolve()
         }
       })
 
-      req.write(payload)
-      req.end()
-    })
+    const form = new FormData()
+    form.append('metadata', metadata)
+    form.append('audio', audio, { contentType: 'application/octet-stream' })
+
+    var request = {
+      ':method': 'POST',
+      ':scheme': 'https',
+      ':path': '/v20160207/events',
+      authorization: `Bearer ${this.accessToken}`
+    }
+
+    const parsedMessage = await postForm(this.client, request, form)
+    if (parsedMessage) {
+      // log the json part of the message
+      if (debug.enabled) {
+        for (const multipartIndex in parsedMessage.multipart) {
+          const part = parsedMessage.multipart[multipartIndex]
+          debug(`UserSays response, multipart ${multipartIndex}: ${util.inspect(part)}`)
+          if (part.headers['Content-Type'] && part.headers['Content-Type'].indexOf('application/json') === 0) {
+            debug(`UserSays response, multipart ${multipartIndex} Body: ${part.body.toString('utf8')}`)
+          }
+        }
+      }
+
+      const contentPayload = parsedMessage.multipart.reduce((acc, part) => {
+        if (part.headers && part.headers['Content-ID']) {
+          debug(`Found Content Payload with CID ${part.headers['Content-ID']}`)
+          acc[part.headers['Content-ID']] = part.body
+        }
+        return acc
+      }, {})
+
+      const directivePayload = parsedMessage.multipart.reduce((acc, part) => {
+        if (part.headers && part.headers['Content-Type'].indexOf('application/json') === 0) {
+          debug(`Found JSON Payload of type ${part.headers['Content-Type']}`)
+          const partJson = JSON.parse(part.body.toString('utf8'))
+          if (partJson.directive) {
+            acc.push(partJson.directive)
+          }
+        }
+        return acc
+      }, [])
+
+      const audioBuffers = []
+      directivePayload.forEach(directive => {
+        if (directive.header && directive.header.namespace === 'SpeechSynthesizer' && directive.header.name === 'Speak') {
+          debug(`Found SpeechSynthesizer/Speak directive ${util.inspect(directive)}`)
+          if (directive.payload.url.indexOf('cid:') === 0) {
+            const lookupContentId = `<${directive.payload.url.substr(4)}>`
+            if (contentPayload[lookupContentId]) {
+              audioBuffers.push({ format: directive.payload.format, payload: contentPayload[lookupContentId] })
+            } else {
+              throw new Error(`Directive payload ${lookupContentId} not found in response.`)
+            }
+          } else {
+            throw new Error(`Directive payload url ${directive.payload.url} not supported.`)
+          }
+        }
+      })
+      if (audioBuffers && audioBuffers.length > 0 && debug.enabled) {
+        audioBuffers.forEach((ab, index) => {
+          fs.writeFileSync(path.resolve(this.tempDirectory, `AlexaSaid${index}.mp3`), ab.payload)
+        })
+      }
+      return audioBuffers
+    } else {
+      debug('UserSays response is empty')
+    }
   }
 
   Stop () {

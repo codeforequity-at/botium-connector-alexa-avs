@@ -1,4 +1,4 @@
-import buble from 'rollup-plugin-buble'
+import babel from 'rollup-plugin-babel'
 import commonjs from 'rollup-plugin-commonjs'
 import json from 'rollup-plugin-json'
 
@@ -6,12 +6,12 @@ export default {
   input: 'index.js',
   output: [
     {
-      file: 'dist/botium-connector-dialogflow-es.js',
+      file: 'dist/botium-connector-alexa-avs-es.js',
       format: 'es',
       sourcemap: true
     },
     {
-      file: 'dist/botium-connector-dialogflow-cjs.js',
+      file: 'dist/botium-connector-alexa-avs-cjs.js',
       format: 'cjs',
       sourcemap: true
     }
@@ -20,7 +20,10 @@ export default {
     commonjs({
       exclude: 'node_modules/**'
     }),
-    buble(),
+    babel({
+      exclude: 'node_modules/**',
+      runtimeHelpers: true
+    }),
     json()
   ]
 }

@@ -37,11 +37,6 @@ class AmazonPolly {
     }
   }
 
-  Start () {
-    debug('Start called')
-    return Promise.resolve()
-  }
-
   Synthesize (text) {
     debug('Synthesize called')
     return new Promise((resolve, reject) => {
@@ -57,14 +52,6 @@ class AmazonPolly {
       .then((response) => {
         return mp3ToWav(response)
       })
-  }
-
-  Stop () {
-    return Promise.resolve()
-  }
-
-  Clean () {
-    return Promise.resolve()
   }
 }
 

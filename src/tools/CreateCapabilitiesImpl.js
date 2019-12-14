@@ -20,11 +20,11 @@ const _extractArgs = () => {
     defaultInput: DEFAULT_LANGUAGE_CODE
   })
 
-  result.tts = readlineSync.question('Text to speech provider (a) Amazon Polly or (g) Google Cloud Text to Speech? (a) ', { limit: /(a|g|)/ })
-  result.tts = result.tts || 'a'
+  result.tts = readlineSync.question('Text to speech provider (b) Botium Speech Processing (a) Amazon Polly (g) Google Cloud Text to Speech? (a) ', { limit: /(a|g|)/ })
+  result.tts = result.tts || 'b'
 
-  result.stt = readlineSync.question('Speech to text provider (a) Amazon Transcribe or (g) Google Cloud Speech? (g) ', { limit: /(a|g|)/ })
-  result.stt = result.stt || 'g'
+  result.stt = readlineSync.question('Speech to text provider (b) Botium Speech Processing (a) Amazon Transcribe (g) Google Cloud Speech? (g) ', { limit: /(a|g|)/ })
+  result.stt = result.stt || 'b'
 
   do {
     result.amazonConfigPath = readlineSync.question(`Amazon config? (${DEFAULT_AMAZON_CONFIG}) `, {
@@ -68,38 +68,65 @@ const _createCapabilities = (args, deviceTokenResponse) => {
     ALEXA_AVS_AVS_LANGUAGE_CODE: args.amazonConfig.languageCode
   }
 
-  const capsTTS = (args.tts === 'g')
-    ? {
+  const capsTTS = {}
+  if (args.tts === 'b') {
+    Object.assign(capsTTS, {
+      ALEXA_AVS_TTS: 'BOTIUM_SPEECH_PROCESSING'
+    })
+  }
+  if (args.tts === 'g') {
+    Object.assign(capsTTS, {
       ALEXA_AVS_TTS: 'GOOGLE_CLOUD_TEXT_TO_SPEECH',
       ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY: args.googleConfig.private_key,
       ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL: args.googleConfig.client_email,
       ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE: args.googleConfig.languageCode
-    }
-    : {
+    })
+  }
+  if (args.tts === 'a') {
+    Object.assign(capsTTS, {
       ALEXA_AVS_TTS: 'AMAZON_POLLY',
       ALEXA_AVS_TTS_AMAZON_POLLY_REGION: args.amazonConfig.region,
       ALEXA_AVS_TTS_AMAZON_POLLY_ACCESS_KEY_ID: args.amazonConfig.accessKeyId,
       ALEXA_AVS_TTS_AMAZON_POLLY_SECRET_ACCESS_KEY: args.amazonConfig.secretAccessKey,
       ALEXA_AVS_TTS_AMAZON_POLLY_LANGUAGE_CODE: args.amazonConfig.languageCode
-    }
+    })
+  }
 
-  const capsSTT = (args.stt === 'g')
-    ? {
+  const capsSTT = {}
+  if (args.stt === 'b') {
+    Object.assign(capsSTT, {
+      ALEXA_AVS_STT: 'BOTIUM_SPEECH_PROCESSING'
+    })
+  }
+  if (args.stt === 'g') {
+    Object.assign(capsSTT, {
       ALEXA_AVS_STT: 'GOOGLE_CLOUD_SPEECH',
       ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY: args.googleConfig.private_key,
       ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: args.googleConfig.client_email,
       ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: args.googleConfig.languageCode
-    }
-    : {
+    })
+  }
+  if (args.stt === 'a') {
+    Object.assign(capsSTT, {
       ALEXA_AVS_STT: 'AMAZON_TRANSCRIBE',
       ALEXA_AVS_STT_AMAZON_TRANSCRIBE_REGION: args.amazonConfig.region,
       ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID: args.amazonConfig.accessKeyId,
       ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY: args.amazonConfig.secretAccessKey,
       ALEXA_AVS_STT_AMAZON_TRANSCRIBE_LANGUAGE_CODE: args.amazonConfig.languageCode,
       ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME: args.amazonConfig.bucketName
-    }
+    })
+  }
 
-  return Object.assign(capsAVS, capsTTS, capsSTT)
+  const capsBSP = {}
+  if (args.tts === 'b' || args.stt === 'b') {
+    Object.assign(capsBSP, {
+      ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_URL: '',
+      ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_APIKEY: '',
+      ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_LANGUAGE: ''
+    })
+  }
+
+  return Object.assign(capsAVS, capsTTS, capsSTT, capsBSP)
 }
 
 module.exports.execute = async () => {
@@ -138,7 +165,7 @@ module.exports.execute = async () => {
 
   // 6) validating capabilities.
   console.log('Validating Capabilities')
-  const connector = new BotiumConnectorAlexaAvs({ queueBotSays: () => {}, caps })
+  const connector = new BotiumConnectorAlexaAvs({ container: {}, queueBotSays: () => {}, caps })
   try {
     connector.Validate()
     console.log('Capabilities are valid')
