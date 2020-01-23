@@ -53,10 +53,11 @@ _See [here](https://github.com/TooTallNate/node-speaker) for more info._
 Please see  [Botium Speech Processing repository](https://github.com/codeforequity-at/botium-speech-processing) for installation instructions.
 
 ### Google Cloud Text-to-Speech API
-1.  [Select or create](https://console.cloud.google.com/project) a Cloud Platform project
-2.  [Enable billing](https://support.google.com/cloud/answer/6293499#enable-billing) for your project (free tier available).
-3.  [Enable](https://console.cloud.google.com/flows/enableapi?apiid=texttospeech.googleapis.com) the Google Cloud Text-to-Speech API.
-4.  [Set up authentication with a service account](https://cloud.google.com/docs/authentication/getting-started) so you can access the API from your local workstation. 
+1. [Select or create](https://console.cloud.google.com/project) a Cloud Platform project
+2. [Enable billing](https://support.google.com/cloud/answer/6293499#enable-billing) for your project (free tier available).
+3. [Enable](https://console.cloud.google.com/flows/enableapi?apiid=texttospeech.googleapis.com) the Google Cloud Text-to-Speech API.
+4. [Set up authentication with a service account](https://cloud.google.com/docs/authentication/getting-started) so you can access the API from your local workstation.
+    1. Make sure to select _Owner_ or _Cloud Speech Service Agent_ as role
 5. **Save the JSON credentials file, you will need it later.**
 
 ### Google Cloud Speech-to-Text API
