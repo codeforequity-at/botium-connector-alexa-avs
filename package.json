@@ -62,6 +62,7 @@
     "randomatic": "^3.1.1",
     "readline-sync": "^1.4.10",
     "request": "^2.88.0",
-    "request-promise-native": "^1.0.8"
+    "request-promise-native": "^1.0.8",
+    "uuid": "^8.3.0"
   }
 }
