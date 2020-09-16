@@ -1,5 +1,5 @@
 const util = require('util')
-const uuidv1 = require('uuid/v1')
+const { v1: uuidv1 } = require('uuid')
 const request = require('request')
 const readlineSync = require('readline-sync')
 
