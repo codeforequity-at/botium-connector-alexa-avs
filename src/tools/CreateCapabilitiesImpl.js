@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-const jsonutil = require('jsonutil')
 const fs = require('fs')
 const readlineSync = require('readline-sync')
 
@@ -20,18 +19,18 @@ const _extractArgs = () => {
     defaultInput: DEFAULT_LANGUAGE_CODE
   })
 
-  result.tts = readlineSync.question('Text to speech provider (b) Botium Speech Processing (a) Amazon Polly (g) Google Cloud Text to Speech? (a) ', { limit: /(a|g|)/ })
-  result.tts = result.tts || 'b'
+  result.tts = readlineSync.question('Text to speech provider (a) Botium Speech Processing (b) Amazon Polly (c) Google Cloud Text to Speech? ', { limit: /(a|b|c)/ })
+  result.tts = result.tts || 'a'
 
-  result.stt = readlineSync.question('Speech to text provider (b) Botium Speech Processing (a) Amazon Transcribe (g) Google Cloud Speech? (g) ', { limit: /(a|g|)/ })
-  result.stt = result.stt || 'b'
+  result.stt = readlineSync.question('Speech to text provider (a) Botium Speech Processing (b) Amazon Transcribe (c) Google Cloud Speech? ', { limit: /(a|b|c)/ })
+  result.stt = result.stt || 'a'
 
   do {
     result.amazonConfigPath = readlineSync.question(`Amazon config? (${DEFAULT_AMAZON_CONFIG}) `, {
       defaultInput: DEFAULT_AMAZON_CONFIG
     })
     try {
-      result.amazonConfig = jsonutil.readFileSync(result.amazonConfigPath)
+      result.amazonConfig = JSON.parse(fs.readFileSync(result.amazonConfigPath, 'utf8'))
     } catch (ex) {
       console.log(`Can not load "${result.amazonConfigPath}". (${ex})`)
     }
@@ -40,13 +39,13 @@ const _extractArgs = () => {
   result.amazonConfig.languageCode = result.amazonConfig.languageCode || languageCode
   result.amazonConfig.bucketName = result.amazonConfig.bucketName || DEFAULT_BUCKET_NAME
 
-  if (result.stt === 'g' || result.tts === 'g') {
+  if (result.stt === 'c' || result.tts === 'c') {
     do {
       result.googleConfigPath = readlineSync.question(`Google config? (${DEFAULT_GOOGLE_CONFIG}) `, {
         defaultInput: DEFAULT_GOOGLE_CONFIG
       })
       try {
-        result.googleConfig = jsonutil.readFileSync(result.googleConfigPath)
+        result.googleConfig = JSON.parse(fs.readFileSync(result.googleConfigPath, 'utf8'))
       } catch (ex) {
         console.log(`Can not load "${result.googleConfigPath}". (${ex})`)
       }
@@ -69,20 +68,12 @@ const _createCapabilities = (args, deviceTokenResponse) => {
   }
 
   const capsTTS = {}
-  if (args.tts === 'b') {
+  if (args.tts === 'a') {
     Object.assign(capsTTS, {
       ALEXA_AVS_TTS: 'BOTIUM_SPEECH_PROCESSING'
     })
   }
-  if (args.tts === 'g') {
-    Object.assign(capsTTS, {
-      ALEXA_AVS_TTS: 'GOOGLE_CLOUD_TEXT_TO_SPEECH',
-      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY: args.googleConfig.private_key,
-      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL: args.googleConfig.client_email,
-      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE: args.googleConfig.languageCode
-    })
-  }
-  if (args.tts === 'a') {
+  if (args.tts === 'b') {
     Object.assign(capsTTS, {
       ALEXA_AVS_TTS: 'AMAZON_POLLY',
       ALEXA_AVS_TTS_AMAZON_POLLY_REGION: args.amazonConfig.region,
@@ -91,22 +82,22 @@ const _createCapabilities = (args, deviceTokenResponse) => {
       ALEXA_AVS_TTS_AMAZON_POLLY_LANGUAGE_CODE: args.amazonConfig.languageCode
     })
   }
+  if (args.tts === 'c') {
+    Object.assign(capsTTS, {
+      ALEXA_AVS_TTS: 'GOOGLE_CLOUD_TEXT_TO_SPEECH',
+      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY: args.googleConfig.private_key,
+      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL: args.googleConfig.client_email,
+      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE: args.googleConfig.languageCode
+    })
+  }
 
   const capsSTT = {}
-  if (args.stt === 'b') {
+  if (args.stt === 'a') {
     Object.assign(capsSTT, {
       ALEXA_AVS_STT: 'BOTIUM_SPEECH_PROCESSING'
     })
   }
-  if (args.stt === 'g') {
-    Object.assign(capsSTT, {
-      ALEXA_AVS_STT: 'GOOGLE_CLOUD_SPEECH',
-      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY: args.googleConfig.private_key,
-      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: args.googleConfig.client_email,
-      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: args.googleConfig.languageCode
-    })
-  }
-  if (args.stt === 'a') {
+  if (args.stt === 'b') {
     Object.assign(capsSTT, {
       ALEXA_AVS_STT: 'AMAZON_TRANSCRIBE',
       ALEXA_AVS_STT_AMAZON_TRANSCRIBE_REGION: args.amazonConfig.region,
@@ -116,13 +107,21 @@ const _createCapabilities = (args, deviceTokenResponse) => {
       ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME: args.amazonConfig.bucketName
     })
   }
+  if (args.stt === 'c') {
+    Object.assign(capsSTT, {
+      ALEXA_AVS_STT: 'GOOGLE_CLOUD_SPEECH',
+      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY: args.googleConfig.private_key,
+      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: args.googleConfig.client_email,
+      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: args.googleConfig.languageCode
+    })
+  }
 
   const capsBSP = {}
-  if (args.tts === 'b' || args.stt === 'b') {
+  if (args.tts === 'a' || args.stt === 'a') {
     Object.assign(capsBSP, {
-      ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_URL: '',
+      ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_URL: 'http://my-botium-speech-processing-url',
       ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_APIKEY: '',
-      ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_LANGUAGE: ''
+      ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_LANGUAGE: 'en'
     })
   }
 

@@ -1,11 +1,11 @@
 {
   "deviceInfo": {
-    "clientId": "xxx",
-    "clientSecret": "xxx",
-    "productId": "xxx"
+    "clientId": "xxx_required_for_AVS",
+    "clientSecret": "xxx_required_for_AVS",
+    "productId": "xxx_required_for_AVS"
   },
-  "region": "xxx",
-  "accessKeyId": "xxx",
-  "secretAccessKey": "xxx",
-  "bucketName": "xxx"
+  "region": "xxx_optional_Polly_or_Transcribe",
+  "accessKeyId": "xxx_optional_Polly_or_Transcribe",
+  "secretAccessKey": "xxx_optional_Polly_or_Transcribe",
+  "bucketName": "xxx_optional_Polly_or_Transcribe"
 }

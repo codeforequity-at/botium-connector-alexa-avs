@@ -8,7 +8,7 @@ const postForm = (client, requestOptions, formData) => {
     requestOptions['content-type'] = `multipart/form-data; boundary=${formData.getBoundary()}`
 
     debug(`HTTP2 request ${JSON.stringify(requestOptions, null, 2)}`)
-    var req = client.request(requestOptions)
+    const req = client.request(requestOptions)
     req.on('error', (err) => {
       debug(`HTTP2 request to ${requestOptions[':path']} error: ${err.message}`)
       return reject(err)

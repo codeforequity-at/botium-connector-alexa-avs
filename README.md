@@ -87,7 +87,7 @@ _Amazon Transcribe only worked for **english language** in our tests_
 
 ### Amazon AVS API of the Product to test
 
-In your Amazon account, you have to register a virtual Alexa device and enable [code-based linking](https://developer.amazon.com/de-DE/docs/alexa/alexa-voice-service/code-based-linking-other-platforms.html).
+In the [Alexa Voice Service Developer console](https://developer.amazon.com/alexa/console/avs/home), you have to register a virtual Alexa device and enable [code-based linking](https://developer.amazon.com/de-DE/docs/alexa/alexa-voice-service/code-based-linking-other-platforms.html).
 
 1. Follow [**Step 1: Enable CBL**](https://developer.amazon.com/de/docs/alexa-voice-service/code-based-linking-other-platforms.html#step1)
 2. **note your "Client ID", the "Client secret" and your "Product ID", you will need it later**
@@ -103,21 +103,21 @@ _Note: If you use Botium Box, then this step is optional. You can import the cre
 * Copy **AVS "Client ID", the "Client secret" and your "Product ID"** from steps above (Amazon AVS API of the Product to test) to a file named amazonConfig.json (see sample in cfg folder of this repository):
 * When using Amazon Transcibe / Amazon Polly:
     * Set region you want to use (Be aware, a region has not all APIs. For example eu-west-1 has Polly, Transcribe, and S3 too)
-    * Copy AVS Access Key ID, and Secret Access Key from steps above  (Amazon Polly, Amazon Transcribe)
+    * Copy Access Key ID, and Secret Access Key from steps above  (Amazon Polly, Amazon Transcribe)
 * When using Amazon Transcibe
     * Create a bucket in S3, or use an existing one. 
 
 ```
 {
   "deviceInfo": {
-    "clientId": "xxx",
-    "clientSecret": "xxx",
-    "productId": "xxx"
+    "clientId": "xxx_required_for_AVS",
+    "clientSecret": "xxx_required_for_AVS",
+    "productId": "xxx_required_for_AVS"
   },
-  "region": "xxx",
-  "accessKeyId": "xxx",
-  "secretAccessKey": "xxx",
-  "bucketName": "xxx"
+  "region": "xxx_optional_Polly_or_Transcribe",
+  "accessKeyId": "xxx_optional_Polly_or_Transcribe",
+  "secretAccessKey": "xxx_optional_Polly_or_Transcribe",
+  "bucketName": "xxx_optional_Polly_or_Transcribe"
 }
 
 ```

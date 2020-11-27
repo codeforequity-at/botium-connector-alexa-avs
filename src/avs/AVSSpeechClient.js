@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const FormData = require('form-data')
 const debug = require('debug')('botium-connector-alexa-avs-avs')
-const uuidv1 = require('uuid/v1')
+const { v1: uuidv1 } = require('uuid')
 const currentVersion = require('node-version')
 const major = parseInt(currentVersion.major, 10)
 if (major < 9) {
@@ -128,7 +128,7 @@ class AVS {
         }
         debug(`Downchannel created ${util.inspect(requestOptions)}`)
 
-        var req = this.client.request(requestOptions)
+        const req = this.client.request(requestOptions)
         req.on('error', (e) => debug(`Downchannel error ${e}`))
         req.on('socketError', (e) => debug(`Downchannel socket error ${e}`))
         req.on('goaway', (e) => debug(`Downchannel goaway ${e}`))
@@ -174,7 +174,7 @@ class AVS {
     form.append('metadata', metadata)
     form.append('audio', audio, { contentType: 'application/octet-stream' })
 
-    var request = {
+    const request = {
       ':method': 'POST',
       ':scheme': 'https',
       ':path': '/v20160207/events',
