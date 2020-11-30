@@ -15,10 +15,10 @@ A virtual Alexa device is registered to be used in testing, and it Works the sam
 
 The steps for Botium to run a conversation with an Alexa skill are:
 
-* Converts [BotiumScript text](https://botium.atlassian.net/wiki/spaces/BOTIUM/pages/491664/Botium+Scripting+-+BotiumScript) to speech ([Botium Speech Processing](https://github.com/codeforequity-at/botium-speech-processing), [Cloud Speech-to-Text API](https://cloud.google.com/text-to-speech/) or [Amazon Polly](https://aws.amazon.com/polly))
+* Converts [BotiumScript text](hhttps://botium-docs.readthedocs.io/en/latest/05_botiumscript/index.html) to speech ([Botium Speech Processing](https://github.com/codeforequity-at/botium-speech-processing), [Cloud Speech-to-Text API](https://cloud.google.com/text-to-speech/) or [Amazon Polly](https://aws.amazon.com/polly))
 * Asks Alexa with [Amazon AVS](https://developer.amazon.com/de/docs/alexa-voice-service/get-started-with-alexa-voice-service.html)
 * Converts answer to text ([Botium Speech Processing](https://github.com/codeforequity-at/botium-speech-processing), [Cloud Text-to-Speech API, aka Cloud Speech API](https://cloud.google.com/speech-to-text/) or [Amazon Transcribe](https://aws.amazon.com/transcribe/))
-* Makes [BotiumScript assertions](https://botium.atlassian.net/wiki/spaces/BOTIUM/pages/491664/Botium+Scripting+-+BotiumScript)
+* Makes [BotiumScript assertions](hhttps://botium-docs.readthedocs.io/en/latest/05_botiumscript/index.html#using-asserters)
 
 _**Warning 1**: TTS and STT can translate wrong. And so the test will fail, even if Alexa works well.
 Google STT handles this problem more sophisticated. See ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT Capability. Another option is to use a homophones list to translate utterances always recognized wrong ("let us" vs "lettuce" ...), see ALEXA_AVS_STT_HOMOPHONES capability below._
@@ -28,7 +28,7 @@ _**Warning 2**: When using the cloud-based APIs, there are costs involved.Please
 It can be used as any other Botium connector with all Botium Stack components:
 * [Botium CLI](https://github.com/codeforequity-at/botium-cli/)
 * [Botium Bindings](https://github.com/codeforequity-at/botium-bindings/)
-* [Botium Box](https://www.botium.at)
+* [Botium Box](https://www.botium.ai)
 
 The Alexa skill to test doesn't have to be published - it can be tested while still in "development mode", making this connector the perfect choice for __Continuous Testing in CI Pipelines__.
 
