@@ -1,4 +1,3 @@
-const util = require('util')
 const debug = require('debug')('botium-connector-alexa-avs-main')
 const _ = require('lodash')
 
@@ -112,7 +111,7 @@ class BotiumConnectorAlexaAvs {
     const { conversation, currentStepIndex } = mockMsg
 
     if (audioBuffers && audioBuffers.length > 0) {
-      for (const [index, audioBuffer] of audioBuffers.entries()) {
+      for (const audioBuffer of audioBuffers) {
         const botMsg = {
           sender: 'bot',
           sourceData: {
