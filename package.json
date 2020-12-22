@@ -9,7 +9,8 @@
   "scripts": {
     "create-capabilities": "node src/tools/CreateCapabilities.js",
     "build": "npm run eslint",
-    "eslint": "eslint index.js src/**/*.js"
+    "eslint": "eslint index.js src/**/*.js",
+    "eslint-fix": "eslint --fix index.js src/**/*.js"
   },
   "repository": {
     "type": "git",
