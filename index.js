@@ -134,7 +134,7 @@ class BotiumConnectorAlexaAvs {
               debug(`Answer converted to text succeeded: ${botAsText}`)
               const replaced = replaceHomophones(this.homophones, botAsText)
               if (botAsText !== replaced) {
-                debug(`Replaced homophones in text, translated to: ${botAsText}`)
+                debug(`Replaced homophones in text, translated to: ${replaced}`)
                 botAsText = replaced
               }
             } else {
