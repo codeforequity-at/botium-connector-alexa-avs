@@ -19,11 +19,11 @@ const _extractArgs = () => {
     defaultInput: DEFAULT_LANGUAGE_CODE
   })
 
-  result.tts = readlineSync.question('Text to speech provider (a) Botium Speech Processing (b) Amazon Polly (c) Google Cloud Text to Speech? ', { limit: /(a|b|c)/ })
-  result.tts = result.tts || 'a'
+  result.tts = readlineSync.question('Text to speech provider (a) Botium Speech Processing (b) Amazon Polly (c) Google Cloud Text to Speech (d) none ? ', { limit: /(a|b|c|d)/ })
+  result.tts = result.tts || 'n'
 
-  result.stt = readlineSync.question('Speech to text provider (a) Botium Speech Processing (b) Amazon Transcribe (c) Google Cloud Speech? ', { limit: /(a|b|c)/ })
-  result.stt = result.stt || 'a'
+  result.stt = readlineSync.question('Speech to text provider (a) Botium Speech Processing (b) Amazon Transcribe (c) Google Cloud Speech (d) none ? ', { limit: /(a|b|c|d)/ })
+  result.stt = result.stt || 'n'
 
   do {
     result.amazonConfigPath = readlineSync.question(`Amazon config? (${DEFAULT_AMAZON_CONFIG}) `, {
@@ -90,6 +90,11 @@ const _createCapabilities = (args, deviceTokenResponse) => {
       ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE: args.googleConfig.languageCode
     })
   }
+  if (args.tts === 'd') {
+    Object.assign(capsTTS, {
+      ALEXA_AVS_TTS: 'NONE'
+    })
+  }
 
   const capsSTT = {}
   if (args.stt === 'a') {
@@ -115,13 +120,19 @@ const _createCapabilities = (args, deviceTokenResponse) => {
       ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: args.googleConfig.languageCode
     })
   }
+  if (args.tts === 'd') {
+    Object.assign(capsTTS, {
+      ALEXA_AVS_STT: 'NONE'
+    })
+  }
 
   const capsBSP = {}
   if (args.tts === 'a' || args.stt === 'a') {
     Object.assign(capsBSP, {
       ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_URL: 'http://my-botium-speech-processing-url',
       ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_APIKEY: '',
-      ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_LANGUAGE: 'en'
+      ALEXA_AVS_TTS_BOTIUM_SPEECH_PROCESSING_LANGUAGE: 'en',
+      ALEXA_AVS_STT_BOTIUM_SPEECH_PROCESSING_LANGUAGE: 'en'
     })
   }
 

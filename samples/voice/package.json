@@ -1,0 +1,20 @@
+{
+  "name": "convo",
+  "version": "1.0.0",
+  "scripts": {
+    "init-alexa-avs": "botium-connector-alexa-avs-init",
+    "test": "mocha spec"
+  },
+  "botium": {
+    "convodirs": [
+      "spec/convo"
+    ],
+    "expandConvos": true,
+    "expandUtterancesToConvos": false
+  },
+  "devDependencies": {
+    "mocha": "latest",
+    "botium-bindings": "latest",
+    "botium-connector-alexa-avs": "../../"
+  }
+}

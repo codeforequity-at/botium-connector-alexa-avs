@@ -1,0 +1,6 @@
+voice
+
+#me
+MEDIA audio/frag_bank_austria.wav
+
+#bot

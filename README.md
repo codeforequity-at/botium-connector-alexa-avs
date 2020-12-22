@@ -211,7 +211,7 @@ fairy,ferry,fair I
 ### ALEXA_AVS_TTS
 _Default: BOTIUM_SPEECH_PROCESSING_
 
-BOTIUM_SPEECH_PROCESSING or GOOGLE_CLOUD_TEXT_TO_SPEECH or AMAZON_POLLY
+BOTIUM_SPEECH_PROCESSING or GOOGLE_CLOUD_TEXT_TO_SPEECH or AMAZON_POLLY or NONE
 
 ### Capabilities for Botium Speech Processing
 
@@ -221,8 +221,8 @@ Botium Speech Processing server url
 ### ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_APIKEY
 Botium Speech Processing API Key (optional)
 
-### ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_LANGUAGE
-Botium Speech Processing language
+### ALEXA_AVS_TTS_BOTIUM_SPEECH_PROCESSING_LANGUAGE / ALEXA_AVS_STT_BOTIUM_SPEECH_PROCESSING_LANGUAGE
+Botium Speech Processing language for TTS / STT
 
 ### Capabilities for Google Cloud Text To Speech
 
