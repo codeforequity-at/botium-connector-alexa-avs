@@ -1,6 +1,6 @@
 {
   "name": "botium-connector-alexa-avs",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Botium Connector for Alexa with AVS",
   "main": "index.js",
   "bin": {
