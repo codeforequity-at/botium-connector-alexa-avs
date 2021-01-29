@@ -1,5 +1,4 @@
 const AWS = require('aws-sdk')
-const mp3ToWav = require('../utils/mp3ToWav')
 const debug = require('debug')('botium-connector-alexa-avs-tts-amazon-polly')
 
 const Capabilities = {
@@ -31,7 +30,7 @@ class AmazonPolly {
     })
 
     this.defaultRequest = {
-      OutputFormat: 'mp3',
+      OutputFormat: 'pcm',
       VoiceId: 'Kimberly',
       LanguageCode: this.caps[Capabilities.ALEXA_AVS_TTS_AMAZON_POLLY_LANGUAGE_CODE]
     }
@@ -49,9 +48,6 @@ class AmazonPolly {
         return resolve(response.AudioStream)
       })
     })
-      .then((response) => {
-        return mp3ToWav(response)
-      })
   }
 }
 

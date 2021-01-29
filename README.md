@@ -38,16 +38,6 @@ For Text-To-Speech and Speech-To-Text, this connector currently supports [Botium
 ### Node.js v10
 Node.js v8 required, but Node.js v10 recommended because Http2 module of Node.js (AVS uses HTTP2) 
 
-### ALSA backend (Linux only)
-
-Depending on your Linux distribution:
-
-    > sudo yum install alsa-lib-devel
-    or
-    > sudo apt-get install libasound2-dev
-
-_See [here](https://github.com/TooTallNate/node-speaker) for more info._
-
 ### Botium Speech Processing
 
 Please see  [Botium Speech Processing repository](https://github.com/codeforequity-at/botium-speech-processing) for installation instructions.

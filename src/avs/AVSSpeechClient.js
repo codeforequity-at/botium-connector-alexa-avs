@@ -187,9 +187,10 @@ class AVS {
       if (debug.enabled) {
         for (const multipartIndex in parsedMessage.multipart) {
           const part = parsedMessage.multipart[multipartIndex]
-          debug(`UserSays response, multipart ${multipartIndex}: ${util.inspect(part)}`)
           if (part.headers['Content-Type'] && part.headers['Content-Type'].indexOf('application/json') === 0) {
             debug(`UserSays response, multipart ${multipartIndex} Body: ${part.body.toString('utf8')}`)
+          } else {
+            debug(`UserSays response, multipart ${multipartIndex}: ${util.inspect(part)}`)
           }
         }
       }

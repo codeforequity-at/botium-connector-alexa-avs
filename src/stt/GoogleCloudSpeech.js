@@ -1,9 +1,9 @@
 
 const util = require('util')
-const speech = require('@google-cloud/speech')
+const _ = require('lodash')
+const speech = require('@google-cloud/speech').v1p1beta1
 const debug = require('debug')('botium-connector-alexa-avs-stt-google-cloud-speech')
 
-const mp3ToWav = require('../utils/mp3ToWav')
 const tokenizer = require('../utils/tokenizer')
 const underlineLanguageCode = require('../utils/underlineLanguageCode')
 
@@ -47,7 +47,7 @@ class GoogleCloudSpeech {
 
     this.defaultRequest = {
       config: {
-        encoding: 'LINEAR16',
+        encoding: 'MP3',
         // if it is set, then google checks wether it is correct.
         // sampleRateHertz: 16000,
         languageCode: underlineLanguageCode(this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE])
@@ -55,25 +55,20 @@ class GoogleCloudSpeech {
     }
   }
 
-  Recognize (audioAsMP3, conversation, currentStepIndex) {
+  async Recognize (audioAsMP3, conversation, currentStepIndex) {
     debug('Recognize called')
-    return mp3ToWav(audioAsMP3)
-      .then((audioAsWav) => {
-        const currentRequest = Object.assign({ audio: { content: audioAsWav } }, this.defaultRequest)
-        const expectedAnswer = this._getExpectedAnswer(conversation, currentStepIndex)
-        if (expectedAnswer) {
-          currentRequest.config.speechContexts = [{ phrases: expectedAnswer }]
-        }
-        debug(`Executing STT with args ${util.inspect(currentRequest)}`)
-        return this.client.recognize(currentRequest)
-      })
-      .then(data => {
-        const response = data[0]
-        const transcription = response.results
-          .map(result => result.alternatives[0].transcript)
-          .join('\n')
-        return transcription
-      })
+    const currentRequest = Object.assign({ audio: { content: audioAsMP3 } }, this.defaultRequest)
+    const expectedAnswer = this._getExpectedAnswer(conversation, currentStepIndex)
+    if (expectedAnswer) {
+      currentRequest.config.speechContexts = [{ phrases: expectedAnswer }]
+    }
+    debug(`Executing STT with args ${util.inspect(_.omit(currentRequest, 'audio.content'))}`)
+    const data = await this.client.recognize(currentRequest)
+    const response = data[0]
+    const transcription = response.results
+      .map(result => result.alternatives[0].transcript)
+      .join('\n')
+    return transcription
   }
 
   Clean () {
@@ -84,11 +79,9 @@ class GoogleCloudSpeech {
 
   _getExpectedAnswer (conversation, currentStepIndex) {
     if (!conversation || !(currentStepIndex >= 0)) {
-      debug('Expected answer feature is not supported')
       return null
     }
     if (!this.caps[Capabilities.ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT]) {
-      debug('Expected answer turned off')
       return null
     }
 
