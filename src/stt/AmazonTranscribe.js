@@ -48,10 +48,9 @@ class AmazonTranscribe {
     })
   }
 
-  Start () {
+  async Start () {
     debug('Start called')
     this.running = true
-    return Promise.resolve()
   }
 
   Recognize (audio) {
@@ -108,9 +107,9 @@ class AmazonTranscribe {
             // 2. polling the job
             return _startPolling(options)
               .then((data) => {
-                if (this.running) {
+                if (!this.running) {
                   debug('Polling finished, process stopped')
-                  return Promise.reject(new Error('Already stopped'))
+                  return reject(new Error('Already stopped'))
                 }
                 const { key } = AmazonS3URI(data.TranscriptionJob.Transcript.TranscriptFileUri)
                 options = { ...options, outputfileKey: key }
@@ -123,25 +122,26 @@ class AmazonTranscribe {
                         debug(`Recognize finished: ${transcription}`)
                         return resolve(transcription)
                       })
+                      .catch(reject)
                   })
+                  .catch(reject)
               })
+              .catch(reject)
           }
         )
       })
     })
   }
 
-  Stop () {
+  async Stop () {
     debug('Stop called')
     this.running = false
-    return Promise.resolve()
   }
 
-  Clean () {
+  async Clean () {
     this.defaultRequest = null
     this.client = null
     this.s3 = null
-    return Promise.resolve()
   }
 }
 
