@@ -9,8 +9,6 @@
       "ALEXA_AVS_AVS_REFRESH_TOKEN": "...",
       "ALEXA_AVS_AVS_LANGUAGE_CODE": "de-DE",
       "ALEXA_AVS_AVS_PRODUCT_ID":"botiumsample",
-      "ALEXA_AVS_TTS": "NONE",
-      "ALEXA_AVS_STT": "NONE",
       "USER_INPUTS": [
         {
           "ref": "MEDIA",

@@ -9,6 +9,7 @@ const DEFAULT_LANGUAGE_CODE = 'en-US'
 const DEFAULT_BUCKET_NAME = 'botium-connector-alexa-avs'
 const DEFAULT_AMAZON_CONFIG = 'amazonConfig.json'
 const DEFAULT_GOOGLE_CONFIG = 'googleConfig.json'
+const DEFAULT_BSP_URL = 'http://my-botium-speech-processing-url'
 const OUTPUT_JSON = 'botium.json'
 
 const _extractArgs = () => {
@@ -19,10 +20,10 @@ const _extractArgs = () => {
     defaultInput: DEFAULT_LANGUAGE_CODE
   })
 
-  result.tts = readlineSync.question('Text to speech provider (a) Botium Speech Processing (b) Amazon Polly (c) Google Cloud Text to Speech (d) none ? ', { limit: /(a|b|c|d)/ })
+  result.tts = readlineSync.question('Text to speech provider (a) Botium Speech Processing (b) Amazon Polly (c) Google Cloud Text to Speech (n) none ? ', { limit: /(a|b|c|n)/ })
   result.tts = result.tts || 'n'
 
-  result.stt = readlineSync.question('Speech to text provider (a) Botium Speech Processing (b) Amazon Transcribe (c) Google Cloud Speech (d) none ? ', { limit: /(a|b|c|d)/ })
+  result.stt = readlineSync.question('Speech to text provider (a) Botium Speech Processing (b) Amazon Transcribe (c) Google Cloud Speech (n) none ? ', { limit: /(a|b|c|n)/ })
   result.stt = result.stt || 'n'
 
   do {
@@ -54,6 +55,14 @@ const _extractArgs = () => {
     result.googleConfig.languageCode = result.googleConfig.languageCode || languageCode
   }
 
+  if (result.stt !== 'n' || result.tts !== 'n') {
+    do {
+      result.bspUrl = readlineSync.question(`Botium Speech Processing url? (${DEFAULT_BSP_URL}) `, {
+        defaultInput: DEFAULT_BSP_URL
+      })
+    } while (!result.bspUrl)
+  }
+
   return result
 }
 
@@ -70,73 +79,83 @@ const _createCapabilities = (args, deviceTokenResponse) => {
   const capsTTS = {}
   if (args.tts === 'a') {
     Object.assign(capsTTS, {
-      ALEXA_AVS_TTS: 'BOTIUM_SPEECH_PROCESSING'
+      ALEXA_AVS_TTS_URL: `${args.bspUrl}/api/tts/${args.amazonConfig.languageCode.substring(0, 2)}`
     })
   }
   if (args.tts === 'b') {
     Object.assign(capsTTS, {
-      ALEXA_AVS_TTS: 'AMAZON_POLLY',
-      ALEXA_AVS_TTS_AMAZON_POLLY_REGION: args.amazonConfig.region,
-      ALEXA_AVS_TTS_AMAZON_POLLY_ACCESS_KEY_ID: args.amazonConfig.accessKeyId,
-      ALEXA_AVS_TTS_AMAZON_POLLY_SECRET_ACCESS_KEY: args.amazonConfig.secretAccessKey,
-      ALEXA_AVS_TTS_AMAZON_POLLY_LANGUAGE_CODE: args.amazonConfig.languageCode
+      ALEXA_AVS_TTS_URL: `${args.bspUrl}/api/tts/${args.amazonConfig.languageCode}`,
+      ALEXA_AVS_TTS_PARAMS: {
+        tts: 'polly'
+      },
+      ALEXA_AVS_TTS_BODY: {
+        polly: {
+          credentials: {
+            region: args.amazonConfig.region,
+            accessKeyId: args.amazonConfig.accessKeyId,
+            secretAccessKey: args.amazonConfig.secretAccessKey
+          }
+        }
+      }
     })
   }
   if (args.tts === 'c') {
     Object.assign(capsTTS, {
-      ALEXA_AVS_TTS: 'GOOGLE_CLOUD_TEXT_TO_SPEECH',
-      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY: args.googleConfig.private_key,
-      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL: args.googleConfig.client_email,
-      ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE: args.googleConfig.languageCode
-    })
-  }
-  if (args.tts === 'd') {
-    Object.assign(capsTTS, {
-      ALEXA_AVS_TTS: 'NONE'
+      ALEXA_AVS_TTS_URL: `${args.bspUrl}/api/tts/${args.googleConfig.languageCode}`,
+      ALEXA_AVS_TTS_PARAMS: {
+        tts: 'google'
+      },
+      ALEXA_AVS_TTS_BODY: {
+        google: {
+          credentials: {
+            private_key: args.googleConfig.private_key,
+            client_email: args.googleConfig.client_email
+          }
+        }
+      }
     })
   }
 
   const capsSTT = {}
   if (args.stt === 'a') {
     Object.assign(capsSTT, {
-      ALEXA_AVS_STT: 'BOTIUM_SPEECH_PROCESSING'
+      ALEXA_AVS_STT_URL: `${args.bspUrl}/api/stt/${args.amazonConfig.languageCode.substring(0, 2)}`
     })
   }
   if (args.stt === 'b') {
     Object.assign(capsSTT, {
-      ALEXA_AVS_STT: 'AMAZON_TRANSCRIBE',
-      ALEXA_AVS_STT_AMAZON_TRANSCRIBE_REGION: args.amazonConfig.region,
-      ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID: args.amazonConfig.accessKeyId,
-      ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY: args.amazonConfig.secretAccessKey,
-      ALEXA_AVS_STT_AMAZON_TRANSCRIBE_LANGUAGE_CODE: args.amazonConfig.languageCode,
-      ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME: args.amazonConfig.bucketName
+      ALEXA_AVS_STT_URL: `${args.bspUrl}/api/stt/${args.amazonConfig.languageCode}`,
+      ALEXA_AVS_STT_PARAMS: {
+        stt: 'awstranscribe'
+      },
+      ALEXA_AVS_STT_BODY: {
+        awstranscribe: {
+          credentials: {
+            region: args.amazonConfig.region,
+            accessKeyId: args.amazonConfig.accessKeyId,
+            secretAccessKey: args.amazonConfig.secretAccessKey
+          }
+        }
+      }
     })
   }
   if (args.stt === 'c') {
     Object.assign(capsSTT, {
-      ALEXA_AVS_STT: 'GOOGLE_CLOUD_SPEECH',
-      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY: args.googleConfig.private_key,
-      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL: args.googleConfig.client_email,
-      ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE: args.googleConfig.languageCode
+      ALEXA_AVS_STT_URL: `${args.bspUrl}/api/stt/${args.googleConfig.languageCode}`,
+      ALEXA_AVS_STT_PARAMS: {
+        stt: 'google'
+      },
+      ALEXA_AVS_STT_BODY: {
+        google: {
+          credentials: {
+            private_key: args.googleConfig.private_key,
+            client_email: args.googleConfig.client_email
+          }
+        }
+      }
     })
   }
-  if (args.tts === 'd') {
-    Object.assign(capsTTS, {
-      ALEXA_AVS_STT: 'NONE'
-    })
-  }
-
-  const capsBSP = {}
-  if (args.tts === 'a' || args.stt === 'a') {
-    Object.assign(capsBSP, {
-      ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_URL: 'http://my-botium-speech-processing-url',
-      ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_APIKEY: '',
-      ALEXA_AVS_TTS_BOTIUM_SPEECH_PROCESSING_LANGUAGE: 'en',
-      ALEXA_AVS_STT_BOTIUM_SPEECH_PROCESSING_LANGUAGE: 'en'
-    })
-  }
-
-  return Object.assign(capsAVS, capsTTS, capsSTT, capsBSP)
+  return Object.assign(capsAVS, capsTTS, capsSTT)
 }
 
 module.exports.execute = async () => {
@@ -177,7 +196,7 @@ module.exports.execute = async () => {
   console.log('Validating Capabilities')
   const connector = new BotiumConnectorAlexaAvs({ container: {}, queueBotSays: () => {}, caps })
   try {
-    connector.Validate()
+    await connector.Validate()
     console.log('Capabilities are valid')
   } catch (error) {
     console.log(error.toString())

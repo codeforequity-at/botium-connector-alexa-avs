@@ -197,68 +197,21 @@ lettuce,let us
 fairy,ferry,fair I
 ```
 
+### Capabilities for Speech-To-Text
 
-### ALEXA_AVS_TTS
-_Default: NONE_
+#### ALEXA_AVS_STT_URL
 
-BOTIUM_SPEECH_PROCESSING or GOOGLE_CLOUD_TEXT_TO_SPEECH or AMAZON_POLLY or NONE
+#### ALEXA_AVS_STT_PARAMS
 
-### Capabilities for Botium Speech Processing
+#### ALEXA_AVS_STT_METHOD
 
-### ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_URL
-Botium Speech Processing server url
+#### ALEXA_AVS_STT_BODY
 
-### ALEXA_AVS_BOTIUM_SPEECH_PROCESSING_APIKEY
-Botium Speech Processing API Key (optional)
+#### ALEXA_AVS_STT_HEADERS
 
-### ALEXA_AVS_TTS_BOTIUM_SPEECH_PROCESSING_LANGUAGE / ALEXA_AVS_STT_BOTIUM_SPEECH_PROCESSING_LANGUAGE
-Botium Speech Processing language for TTS / STT
+#### ALEXA_AVS_STT_TIMEOUT
 
-### Capabilities for Google Cloud Text To Speech
-
-#### ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY
-See json downloaded from Google
-
-#### ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL
-See json downloaded from Google
-
-#### ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE
-Language setting for Google. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE
-
-### Capabilities for Amazon Polly
-
-#### ALEXA_AVS_TTS_AMAZON_POLLY_REGION
-Amazon region. Any region can be used which supports Amazon Polly
-
-#### ALEXA_AVS_TTS_AMAZON_POLLY_ACCESS_KEY_ID
-See json downloaded from Amazon
-
-#### ALEXA_AVS_TTS_AMAZON_POLLY_SECRET_ACCESS_KEY
-See json downloaded from Amazon
-
-#### ALEXA_AVS_TTS_AMAZON_POLLY_LANGUAGE_CODE
-Language setting for Amazon. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE
-
-### ALEXA_AVS_STT
-_Default: BOTIUM_SPEECH_PROCESSING_
-
-BOTIUM_SPEECH_PROCESSING or GOOGLE_CLOUD_SPEECH or AMAZON_TRANSCRIBE
-
-### Capabilities for Botium Speech Processing
-see above
-
-### Capabilities for Google Cloud Speech
-
-#### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_PRIVATE_KEY
-See json downloaded from Google. Same as ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_PRIVATE_KEY if they sharing the same project
-
-#### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_CLIENT_EMAIL
-See json downloaded from Google. Same as ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_CLIENT_EMAIL if they sharing the same project
-
-#### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_LANGUAGE_CODE
-Language setting for Goolge. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE and ALEXA_AVS_TTS_GOOGLE_CLOUD_TEXT_TO_SPEECH_LANGUAGE_CODE
-
-### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT
+#### ALEXA_AVS_STT_SEND_TEXT_AS_PHRASE_HINT
 _Default: true_
 
 After we got speech response from Alexa, and we are sending it to Google STT, there is a possibility to send 
@@ -268,7 +221,7 @@ If this flag is true, then the test is not strict. It can accept small differenc
 
 If this flag is false, then the test is strict. A test can fail even if the answer of Alexa, and our expectations in testcase are the same. Just because Google STT doesn't translate well.
 
-### ALEXA_AVS_STT_GOOGLE_CLOUD_SPEECH_SEND_TEXT_AS_PHRASE_HINT_USE_NEGATED
+#### ALEXA_AVS_STT_SEND_TEXT_AS_PHRASE_HINT_USE_NEGATED
 _Default: true_
 
 The utterance is negated
@@ -282,22 +235,20 @@ hi!
 
 Then it will be send as expected answer to Google STT, expect this flag is false.
 
-### Capabilities for Amazon Transcribe
 
-#### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_REGION
-Amazon region. Any region can be used which supports Amazon Polly
+### Capabilities for Text-To-Speech
 
-#### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_ACCESS_KEY_ID
-See json downloaded from Amazon
+#### ALEXA_AVS_TTS_URL
 
-#### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_SECRET_ACCESS_KEY
-See json downloaded from Amazon
+#### ALEXA_AVS_TTS_PARAMS
 
-#### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_LANGUAGE_CODE
-Language setting for Amazon. Usually same as ALEXA_AVS_AVS_LANGUAGE_CODE
+#### ALEXA_AVS_TTS_METHOD
 
-#### ALEXA_AVS_STT_AMAZON_TRANSCRIBE_BUCKET_NAME
-The name of an existing S3 bucket
+#### ALEXA_AVS_TTS_BODY
+
+#### ALEXA_AVS_TTS_HEADERS
+
+#### ALEXA_AVS_TTS_TIMEOUT
 
 ## Open Issues and Restrictions
 * If a text is very long (more thousand), then connector dies because AVS error. Long messages should be sent in chunks.

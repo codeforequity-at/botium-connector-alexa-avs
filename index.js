@@ -1,17 +1,12 @@
 const debug = require('debug')('botium-connector-alexa-avs-main')
-const _ = require('lodash')
 
+const BotiumSpeechProcessingSTT = require('./src/stt/BotiumSpeechProcessing')
+const BotiumSpeechProcessingTTS = require('./src/tts/BotiumSpeechProcessing')
+const { AVS } = require('./src/avs/AVSSpeechClient')
 const { loadHomophones, replaceHomophones } = require('./src/utils/homophones')
 
 const Capabilities = {
-  ALEXA_AVS_TTS: 'ALEXA_AVS_TTS',
-  ALEXA_AVS_STT: 'ALEXA_AVS_STT',
   ALEXA_AVS_STT_HOMOPHONES: 'ALEXA_AVS_STT_HOMOPHONES'
-}
-
-const Defaults = {
-  [Capabilities.ALEXA_AVS_TTS]: 'NONE',
-  [Capabilities.ALEXA_AVS_STT]: 'NONE'
 }
 
 class BotiumConnectorAlexaAvs {
@@ -23,21 +18,16 @@ class BotiumConnectorAlexaAvs {
 
   async Validate () {
     debug('Validate called')
-    if (!this.caps[Capabilities.ALEXA_AVS_TTS]) this.caps[Capabilities.ALEXA_AVS_TTS] = Defaults[Capabilities.ALEXA_AVS_TTS]
-    if (!this.caps[Capabilities.ALEXA_AVS_STT]) this.caps[Capabilities.ALEXA_AVS_STT] = Defaults[Capabilities.ALEXA_AVS_STT]
-
-    if (this.caps[Capabilities.ALEXA_AVS_TTS] !== 'NONE') {
-      this.tts = new (require('./src/tts/' + _toModuleName(this.caps[Capabilities.ALEXA_AVS_TTS])))(this.caps, this.container.tempDirectory)
-      this.tts.Validate && this.tts.Validate()
+    if (Object.keys(this.caps).find(c => c.startsWith('ALEXA_AVS_TTS'))) {
+      this.tts = new BotiumSpeechProcessingTTS(this.caps)
+      await this.tts.Validate()
     }
-
-    if (this.caps[Capabilities.ALEXA_AVS_STT] !== 'NONE') {
-      this.stt = new (require('./src/stt/' + _toModuleName(this.caps[Capabilities.ALEXA_AVS_STT])))(this.caps, this.container.tempDirectory)
-      this.stt.Validate && this.stt.Validate()
+    if (Object.keys(this.caps).find(c => c.startsWith('ALEXA_AVS_STT'))) {
+      this.stt = new BotiumSpeechProcessingSTT(this.caps)
+      await this.stt.Validate()
     }
-
-    this.avs = new (require('./src/avs/AVSSpeechClient')).AVS(this.caps, this.container.tempDirectory)
-    this.avs.Validate()
+    this.avs = new AVS(this.caps, this.container.tempDirectory)
+    await this.avs.Validate()
   }
 
   async Build () {
@@ -100,7 +90,8 @@ class BotiumConnectorAlexaAvs {
       debug('Alexa answering...')
       const audioBuffers = await this.avs.UserSays(userAsSpeech)
       debug('Alexa answered successfull')
-      setTimeout(() => this._processResponse(audioBuffers, msg), 0)
+      const mockMsg = { ...msg }
+      setTimeout(() => this._processResponse(audioBuffers, mockMsg), 0)
     } catch (err) {
       debug(`AVS.UserSays failed: ${err.message}`)
       throw err
@@ -174,16 +165,6 @@ class BotiumConnectorAlexaAvs {
   }
 }
 
-// ALEXA_AVS_TTS
-// ->
-// AlexaAvsTts
-const _toModuleName = (capsName) => {
-  return capsName
-    .split('_')
-    .map((item) => _.toLower(item))
-    .map((item) => _.upperFirst(item))
-    .join('')
-}
 module.exports = {
   PluginVersion: 1,
   PluginClass: BotiumConnectorAlexaAvs
