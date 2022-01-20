@@ -1,5 +1,7 @@
 const _ = require('lodash')
 const axios = require('axios').default
+const { getAxiosShortenedOutput, getAxiosErrOutput } = require('./axios')
+
 const debug = require('debug')('botium-connector-alexa-avs-botium-speech-processing-base')
 
 const Capabilities = {
@@ -122,25 +124,11 @@ class BotiumSpeechProcessingBase {
   }
 
   _getAxiosShortenedOutput (data) {
-    if (data) {
-      if (_.isBuffer(data)) {
-        try {
-          data = data.toString()
-        } catch (err) {
-        }
-      }
-      return _.truncate(_.isString(data) ? data : JSON.stringify(data), { length: 200 })
-    } else {
-      return ''
-    }
+    return getAxiosShortenedOutput(data)
   }
 
   _getAxiosErrOutput (err) {
-    if (err && err.response) {
-      return `Status: ${err.response.status} / Response: ${this._getAxiosShortenedOutput(err.response.data)}`
-    } else {
-      return err.message
-    }
+    return getAxiosErrOutput(err)
   }
 }
 
