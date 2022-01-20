@@ -18,11 +18,11 @@ class BotiumConnectorAlexaAvs {
 
   async Validate () {
     debug('Validate called')
-    if (Object.keys(this.caps).find(c => c.startsWith('ALEXA_AVS_TTS'))) {
+    if (this.caps.ALEXA_AVS_TTS_URL) {
       this.tts = new BotiumSpeechProcessingTTS(this.caps)
       await this.tts.Validate()
     }
-    if (Object.keys(this.caps).find(c => c.startsWith('ALEXA_AVS_STT'))) {
+    if (this.caps.ALEXA_AVS_STT_URL) {
       this.stt = new BotiumSpeechProcessingSTT(this.caps)
       await this.stt.Validate()
     }
